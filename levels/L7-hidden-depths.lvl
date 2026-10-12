@@ -1,0 +1,803 @@
+# TERMINAL STATE — levels/L7-hidden-depths.lvl
+#
+# L7 · "Hidden Depths" — the story-true successor to levels/07.lvl (which stays in
+# the ARCHIVE folder, golden and untouched).
+#
+# ── SPATIAL REDESIGN (2026-09-23 (real-world), the spatial redesign §3 L7 +
+#    the puzzle-graph redesign §L7) ────────────────────────────────
+# The room grows to 24x18x7 and gains a real, wadeable RIVER — a 2-cell `water`
+# floor zone at y=10..11, honest and cheap (no new wall geometry: the channel is
+# a floor material, not a partition). The near-bank garden (y=1..9) keeps water,
+# light, growth, bloom; the far bank (y=12..17) keeps seed, rest, dormant and the
+# Apollyon letter — now truly "across the water" instead of a decal on one floor.
+# A holographic phantom (`[holo] sphere`) sits on the far bank and two `godrays`
+# grow-light shafts pour over the near-bank beds.
+#
+# THE PUZZLE GRAPH CHANGES (the puzzle-graph redesign §L7, overrides the brief where
+# they conflict): `dormant` is upgraded from a dead-end decoy (T1, is_output) to
+# a real HIDDEN rival route (T2): two new pipes, `light->dormant` and
+# `dormant->growth`, let the phantom feed `growth` directly if you give it BOTH
+# seed and light — but that costs one unit more than the `rest` buffer, so it
+# lights `growth` and leaves nothing for `growth->bloom`. "I was watered. I grew
+# toward it. [and stopped there]" The mandatory `rest` buffer (canon,
+# PROGRESSION §2 L7(c)) is unchanged. New pipes 6 and 7 are appended LAST so the
+# bit order of pipes 0-5 is preserved for existing tests.
+#
+# CAMPAIGN SLOT: manifest #7 · movement P3 "The Phantom Sister"
+#                load ▇ — **PEAK 1 (Twist 2)**
+# NEW IDEA (exactly one): **the threshold neuron** — a unit that needs k inputs at
+#   once, where only k-1 of them can reach it directly. The k-th arrives ONLY through
+#   the inert node you have spent two levels learning to avoid.
+#   "The decoy isn't a trap here — it's the only thing between me and an infinite
+#    loop. I need the useless one."
+#
+# ── MECHANIC (pure data — threshold + a MANDATORY buffer + a rival route) ─────
+#   water (IN=1) ─────────────────────────►  growth (T=3) ──►  bloom (T=1) ──► door
+#   light (IN=1) ──┬──────────────────────►  growth (T=3)
+#                   └──────────────────────►  dormant (T=2)  ◄── seed  (IN=1)
+#   seed  (IN=1) ──►  rest (T=1) ──(z=3)──►  growth (T=3)         │
+#                └──►  dormant (T=2) ────────────────(z=3)────────┘──► growth (T=3)
+#
+# `growth` needs THREE units and has exactly three feeds — but the third one does not
+# exist as a direct line. `seed` cannot reach `growth`; the only wire out of `seed`
+# that arrives anywhere useful goes through `rest`, whose pool is REST / PAUSE /
+# EXHALE (PROGRESSION §2 L7(c), verbatim). Two levels of training say "the inert
+# node is the lie, leave it dark." Here it is load-bearing: you can only think
+# without looping by letting one beat go dark first. That inversion IS the peak.
+#
+# THE PHANTOM, NOW A REAL RIVAL (the puzzle-graph redesign §L7, 2026-09-23 (real-world)). `dormant`
+# is no longer a dead-end decoy — it is a genuine second route to `growth`, and a
+# genuine rival to the mandatory buffer. It needs BOTH `seed` and `light` (T=2:
+# "the shape like us wants two of your inputs"), and if you feed it, its own wire
+# to `growth` lights the same threshold the buffer route lights — but the budget
+# is spent by then, so `growth->bloom` is REFUSED. "I was watered. I grew toward
+# it." — and stopped there, one unit short of blooming. Its pool is still
+# DORMANT / SLEEP / FALLOW / BURIED: the seed left in the dark is now a choice
+# with a cost, not scenery.
+#
+# SOLUTION (5 toggles): water->growth, light->growth, seed->rest, rest->growth,
+#   growth->bloom — all ON. `seed->dormant`, `light->dormant`, `dormant->growth`
+#   stay dark — feeding the phantom instead spends the unit `growth->bloom` needs.
+#
+# SOLVE PROXIES (plan §6, peaks): min-toggle 5 (cap 8) · nodes 7 (cap 9).
+#
+# READOUT (WORD_STORY §RESULT, canon): WATER + LIGHT + SEED -> GROWTH -> BLOOM
+# NAME SHARD 7 — the final byte. The name completes here: pid://aleks_v@...
+#
+# ── HONEST FLAG: the pseudo-cycle is NOT data-only ────────────────────────────
+# PUZZLE_CONCEPTS #2 ("The Node That Targets Itself") is marked ✅ data-only and
+# specifies that the NATURAL wiring closes a one-step ring, raises
+# `ForwardError::Cycle`, and rolls back — with the decoy-as-buffer breaking the ring
+# into a valid DAG. That flag is OPTIMISTIC, exactly like the L8 dead-node flag the
+# plan's R4 already corrected. Verified against the shipped runtime:
+# `re_puzzle::network_forward` builds its Kahn in-degree from EVERY pipe, ON or OFF
+# (`edge_active = |p| !cycle_keep || p.is_on()`), so pipe STATE cannot open or close
+# a ring. A ring in the authored pipe set is therefore a LOAD-TIME failure
+# (`PuzzleState::from_level` -> Err(Cycle) -> lvlcheck `dag` FAIL), and a
+# player-created ring is impossible. The only level that may hold one is L12, which
+# opts in with `[room] cycle_keep = true` — and that mode never rolls back, so it is
+# the opposite of what #2 needs.
+# BUILT INSTEAD (same aha, no engine change): the threshold makes the inert buffer
+# MANDATORY, so the player still has to reach for the useless one against two
+# levels of training. The loop stays present as the named temptation — the
+# system_log below reports the ring the player is about to try and the roll-back
+# that would eat it — but it is text, not a wiring the graph can hold.
+#
+# ── TOKEN DISCIPLINE (W1 allowlist) ───────────────────────────────────────────
+# CONTENT_PACK Part A · L7 offers
+#   `> operator {username} compiled this build on {build_date}. ...`
+# `{build_date}` is NOT on the W1 allowlist, and under the structural-omission rule
+# the whole line — including its `{username}` — would DROP. DECISION: rewritten to
+# drop the build date and keep the beat, so the line resolves in both opt states.
+# `{username}` is Tier-1 allowlisted. No other token appears in this file.
+#
+# Verify:
+#   cargo run -q -p re_game -- --dump levels/L7-hidden-depths.lvl --ansi
+#   cargo run -q -p re_lvlcheck --bin lvlcheck -- levels/L7-hidden-depths.lvl
+
+[meta]
+name        = level-L7-hidden-depths
+title       = Hidden Depths
+version     = 1
+spec_rev    = 2026-07-30
+prop_style  = vault
+
+[room]
+size        = 24 18 7
+floor       = grid
+ceiling     = dim
+# FIX D1 (2026-09-23 (real-world)): trace-pattern -> solid, so the authored `moss` wall
+# material actually paints the room instead of every wall reading as the shared
+# `live_trace` monitor skin (the spatial redesign §1 D1).
+ambient     = solid
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05). At most N pipes may be
+# ON at the same time; switching one ON at the cap is REFUSED (the pipe stays off
+# and nothing else changes), switching one OFF always frees a unit. Absent or 0 =
+# unlimited, which is what every non-campaign level still carries.
+# WHY: the forward pass has no inhibition, so activation is MONOTONE in the ON-set
+# — without a cap, all-switches-ON wins whenever anything wins, and every decoy in
+# the campaign is decorative. This is the number that makes wrong wiring cost.
+# THIS LEVEL: 5 of 8 pipes (widened from 6 pipes 2026-09-23 (real-world): `light->dormant` and
+# `dormant->growth` are new). growth (T=3) needs water + light + rest, rest needs
+# seed, and growth->bloom carries it out — that IS the 5. Feeding the phantom
+# (`seed->dormant` OR the `light->dormant`+`dormant->growth` rival route) still
+# lights growth (the rival route sums to 3 on its own), but by then the budget is
+# spent and `growth->bloom` is refused: the phantom route grows and never blooms.
+power_budget = 5
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# ── ESCALATION (manifest fog_far = 14.0) ──────────────────────────────────────
+# `steam = on` is the WARM axis (STORY_BIBLE §7 — L4 / L5 / L7): the grow-room is the
+# warmest place in the campaign and the most frightening, because you were loved into
+# this shape by people who are gone. The matrix bleed climbs to 0.40 and `glitch` to
+# 0.30 — both still under `POOL_ALT_GLITCH_THRESHOLD` (0.5), so the pipes stream the
+# CLEAN pool and the garden's words stay readable. fog_far steps to 14.0: the first
+# crossing of LETHE, and the far bank is already hard to see.
+[effects]
+steam       = on
+matrix      = 0.40
+glitch      = 0.30
+
+[palette]
+fog_color   = #0B1410
+fog_near    = 2.5
+fog_far     = 14.0
+
+# ── COLOR-FORWARD palette ─────────────────────────────────────────────────────
+# Warm mossy masonry over a wet deck: a grow-room that still runs. The live wire is
+# hot green (growing toward the light). The COLD far-bank surfaces are the matrix
+# wall where the phantom sits.
+[material grow_wall]
+preset      = moss
+fg          = #8ED080
+bg          = #0A140C
+surface     = wall_solid
+
+[material wet_deck]
+preset      = wet_stone
+fg          = #6C8478
+bg          = #08100C
+surface     = floor
+
+[material roof]
+preset      = metal
+fg          = #2C3830
+bg          = #050806
+surface     = ceiling
+
+[material live_trace]
+preset      = monitor
+fg          = #B6F04A
+bg          = #0A1206
+surface     = wall_trace
+
+# THE BEDS. A soil-brown floor patch under the near-bank garden, distinct from
+# the bare wet_deck everywhere else. Joins the colour palette (no `surface =`)
+# so [zone] binds it to just the bed cells.
+[material soil_bed]
+recipe      = grain scale=2.4 speck=0.35
+fg          = #7A5A36
+bg          = #100C06
+
+[zone beds]
+region      = (1,2,0)-(6,9,0)
+material    = __prop_soil_bed
+scale       = none
+
+# THE RIVER. A wadeable 2-cell channel across the whole width — floor material
+# only, not a wall (the spatial redesign §3 L7 "honest, and cheap"). `preset = water`
+# is reflective (clarity 0.45) and Shift-animated, so the grow lamp and the
+# godray shafts show reflected in it.
+[material lethe]
+preset      = water
+fg          = #4A6858
+bg          = #04100C
+
+[zone river]
+region      = (0,10,0)-(23,11,0)
+material    = __prop_lethe
+scale       = none
+
+# SOUND FIELD: F1 lethe_wash — LETHE,
+# the river of forgetting. Static on the river (no `drive`, defaults to
+# DriveSpec::Const): the wash holds the moment you wade in, full width.
+[field river]
+kind        = lethe_wash
+region      = (0,10,1)-(23,11,1)
+
+# ROUND 2 — the floor surfaces that carry the landmark. A `[zone]` id on the
+# floor is never drawn: re_render paints a per-cell floor id only when its
+# material is a prop floor decal (name prefix `__prop_`). So `soil_bed` and
+# `lethe` have always rendered as plain wet_deck. The zones below now bind
+# `__prop_`-named materials, which the renderer does draw:
+#   * `__prop_lethe` — the RIVER band, brighter teal water across the width;
+#   * `__prop_soil_bed` — the brown grow beds under the input pools;
+#   * `__prop_base_d8b078` — re-tunes the PIER trace's own floor base (the kit
+#     names it after the ink; an authored material of that name wins), pale
+#     planks: a bright leading line from the spawn toward the water.
+[material __prop_lethe]
+recipe      = grain scale=3 speck=0.2
+fg          = #B4ECF4
+bg          = #2A7084
+
+[material __prop_soil_bed]
+recipe      = grain scale=2.4 speck=0.35
+fg          = #9A7446
+bg          = #22180C
+
+[material __prop_base_d8b078]
+recipe      = grain scale=2 speck=0.1
+fg          = #F0C890
+bg          = #6A4828
+
+# The empty seer's chair across the water (see [prop seer_chair]): a cold, dim,
+# self-lit seat so its silhouette survives the far-bank dark.
+[material seat_glow]
+preset      = neon
+fg          = #8FB4D0
+bg          = #1C3448
+
+[material seat_back]
+preset      = neon
+fg          = #A8CCE8
+bg          = #2A4A64
+
+# THE FAR BANK. A cold, decaying face-wall behind the phantom node — cold
+# face-glyphs across the river LETHE (PROGRESSION §2 L7(f)). `flicker` = signal
+# lost: something is over there and it is not receiving.
+[material far_bank]
+preset      = decay
+fg          = #4A5A6A
+bg          = #05080C
+animation   = flicker speed=0.5 amplitude=0.30
+surface     = wall_matrix
+
+# South wall, on the FAR bank (y=17 is the new south perimeter — the room grew
+# from 16 to 18 deep 2026-09-23 (real-world)).
+[wall_decal]
+surface     = matrix
+region      = (8,17,1)-(15,17,3)
+
+# THE PHANTOM. A hollow blue wireframe shape like a seer, on the far bank —
+# walk-through, see-through (`CellKind::Hologram` is not collidable). This is
+# the level's landmark: seen across the river from spawn (the spatial redesign §3 L7
+# Landmark).
+[holo phantom]
+shape       = sphere
+region      = (10,15,1)-(12,16,3)
+style       = 0
+
+# SOUND FIELD: F6 phantom_hollow — a
+# node that never answers. `[holo]` is not an inline-attach host (fields.rs
+# supports node/pipe/door only), so this is authored standalone at the holo's
+# centre. `drive = lit:dormant`: always present and not answering, brightening
+# to 1.0 only when the rival route lights `growth`.
+[field phantom_field]
+kind        = phantom_hollow
+at          = 11, 15.5, 2
+drive       = lit:dormant
+
+# ── LIGHT + GODRAYS (the spatial redesign §3 L7) ────────────────────────────────────
+# One grow lamp, no light at all on the far bank (deliberate — the phantom sits
+# in the dark). Two `godrays` shafts (colour-only, no glyphs — GODRAYS-demo.lvl)
+# pour over the two near-bank input pools.
+[light]
+pos         = 4.0, 4.0, 5.0
+color       = #FFD890
+radius      = 5.0
+intensity   = 1.0
+
+[atmosphere]
+ambient     = 0.10
+fog_height  = 0.2 0.7
+postfx      = subtle    # P3 "The Basement & The River" — owner-approved 2026-09-23 (real-world) per-movement postfx
+
+[emitter shaft_water]
+kind            = godrays
+origin_world    = 3.0 2.5 5.5
+colors          = 0xFFF2D0 0xFFD27A 0xC08020
+color_mode      = RampOverAge
+direction       = 0.0 0.0 -1.0
+spread_deg      = 85.0
+rate            = 150.0
+speed           = 0.7
+speed_spread    = 0.3
+path_jitter     = 0.4
+lifetime        = 4.0
+lifetime_spread = 0.7
+accel           = 0.0 0.0 0.0
+max_particles   = 350
+seed            = 4001
+
+[emitter shaft_light]
+kind            = godrays
+origin_world    = 3.0 6.0 5.5
+colors          = 0xFFF2D0 0xFFD27A 0xC08020
+color_mode      = RampOverAge
+direction       = 0.0 0.0 -1.0
+spread_deg      = 85.0
+rate            = 150.0
+speed           = 0.7
+speed_spread    = 0.3
+path_jitter     = 0.4
+lifetime        = 4.0
+lifetime_spread = 0.7
+accel           = 0.0 0.0 0.0
+max_particles   = 350
+seed            = 4002
+
+# ── NODES ─────────────────────────────────────────────────────────────────────
+# Pools VERBATIM from WORD_STORY §2 (L7 rows), anchor word first; `rest`'s pool is
+# PROGRESSION §2 L7(c)'s REST / PAUSE / EXHALE, verbatim.
+
+[node water]
+pos          = 2,2,2
+glyph        = W
+pool         = WATER RAIN DEW SAP DROPLET STREAM IRRIGATE MONSOON THIRST-END
+pool_alt     = вода 水 ماء eau Wasser 물 agua
+color        = #6FD0FF
+is_input     = yes
+
+[node light]
+pos          = 2,6,2
+glyph        = L
+pool         = LIGHT SUN PHOTON DAYLIGHT WARMTH GLOW NOON RADIANCE
+pool_alt     = свет 光 ضوء lumière Licht 빛 luz
+color        = #FFE680
+is_input     = yes
+
+[node seed]
+pos          = 2,13,2
+glyph        = S
+pool         = SEED SPORE KERNEL GERM ACORN PIP SPROUT-WAIT EMBRYO
+pool_alt     = семя 種 بذرة graine Samen 씨앗 semilla
+color        = #C8A878
+is_input     = yes
+
+# THE BUFFER. Inert by every instinct the campaign has trained — and the ONLY way
+# the third unit reaches the threshold. You have to let one beat go dark to get
+# through. A tiny, merciful release.
+[node rest]
+pos          = 7,13,2
+glyph        = R
+pool         = REST PAUSE EXHALE FALLOW STILL BUFFER
+pool_alt     = покой 息 pausa souffle Atem 휴식
+color        = #9AA890
+threshold    = 1
+
+# THE PHANTOM — now a real HIDDEN rival route (the puzzle-graph redesign §L7,
+# 2026-09-23 (real-world)), not a dead-end. threshold 2, in_degree 2 (seed + light): feed it
+# both and it fires, and its own wire reaches `growth` too — but by then the
+# budget is spent and `growth->bloom` is refused. Dropped `is_output`: it no
+# longer needs to be a terminal readout node, because it now has somewhere to go.
+[node dormant]
+pos          = 11,14,2
+glyph        = X
+pool         = DORMANT SLEEP WAIT FALLOW FROST-LOCK BURIED STILL
+pool_alt     = покой 休眠 سكون dormance Ruhe 휴면 latente
+color        = #3E4638
+threshold    = 2
+
+# THE THRESHOLD NEURON — the level's one new idea. Three units, in_degree 4 (the
+# fourth being the phantom's rival feed), and the mandatory-buffer unit can only
+# arrive through `rest`.
+[node growth]
+pos          = 12,6,2
+glyph        = G
+pool         = GROWTH GREEN VINE STEM TENDRIL UNFURL REACH FLOURISH LEAF
+pool_alt     = рост 成長 نمو croissance Wachstum 성장 brote
+color        = #6FE08A
+threshold    = 3
+# SOUND FIELD: F10 threshold_strain —
+# `growth` needs 3 of 4 feeds; strain pumps until it fires. Implied drive =
+# starve:growth (§4.1 host table).
+field        = threshold_strain
+
+[node bloom]
+pos          = 18,6,2
+glyph        = B
+pool         = BLOOM FLOWER PETAL BLOSSOM OPEN ROSE LILY CROWN
+pool_alt     = цветок 花 زهرة fleur Blüte 꽃 flor
+color        = #FFFFFF
+is_output    = yes
+threshold    = 1
+
+# ── PIPES (all OFF at load) ───────────────────────────────────────────────────
+
+[pipe water->growth]
+state        = OFF
+path         = (2,2,2) (12,2,2) (12,6,2)
+switch_at    = (6,2,2)
+density      = 0.7
+color        = #6FD0FF
+
+[pipe light->growth]
+state        = OFF
+path         = (2,6,2) (12,6,2)
+switch_at    = (6,6,2)
+density      = 0.7
+color        = #FFE680
+
+# seed has NO direct line to growth. This is the only wire out of it that leads
+# anywhere the threshold can use.
+[pipe seed->rest]
+state        = OFF
+path         = (2,13,2) (7,13,2)
+switch_at    = (4,13,2)
+density      = 0.6
+color        = #C8A878
+
+# THE BUFFER'S OUTPUT — the third unit, arriving over the service deck at z=3,
+# bridging the river overhead.
+[pipe rest->growth]
+state        = OFF
+path         = (7,13,2) (7,13,3) (12,13,3) (12,6,3) (12,6,2)
+switch_at    = (9,13,3)
+density      = 0.6
+color        = #9AA890
+
+# The other thing seed can feed: the phantom across the river.
+[pipe seed->dormant]
+state        = OFF
+path         = (2,13,2) (2,14,2) (11,14,2)
+switch_at    = (6,14,2)
+density      = 0.5
+color        = #3E4638
+
+# The carry-out. It leaves `growth` on the centreline, steps NORTH two cells, runs
+# the length of the room past the pedestal, and comes back down onto `bloom`.
+#
+# WHY THE DETOUR (real-world) 2026-08-07: the straight run crossed the pedestal
+# footprint, and the `[emit] flower_head` centre row sat on the wiring. A pipe
+# path cell is RESERVED — `emit_parts` refuses to stamp a reward onto the wiring
+# — so the flower shipped with its side petals and NO middle bar. The pipe's
+# route between two fixed endpoints is free; the flower's silhouette is not. So
+# the pipe moved NORTH (y=4) around the pedestal (now at x15..17, y5..7).
+# `switch_at` is unchanged in spirit: still the first cell out of `growth`.
+# Guarded by `re_lvlcheck`'s `emit_parts` rule.
+[pipe growth->bloom]
+state        = OFF
+path         = (12,6,2) (13,6,2) (13,4,2) (18,4,2) (18,6,2)
+switch_at    = (13,6,2)
+density      = 0.7
+color        = #6FE08A
+
+# THE RIVAL ROUTE (the puzzle-graph redesign §L7, appended LAST so pipes 0-5 keep
+# their bit order). `light->dormant` climbs over the `light` node to z=3, runs
+# the west wall, crosses the river overhead and turns in to `dormant` from
+# above — clear of `rest->growth`'s own z=3 run and of the holo sphere.
+[pipe light->dormant]
+state        = OFF
+path         = (2,6,2) (2,6,3) (1,6,3) (1,15,3) (9,15,3) (9,14,3) (11,14,3) (11,14,2)
+switch_at    = (1,12,3)
+density      = 0.5
+color        = #3E4638
+
+# `dormant->growth` runs north along x=11 at z=2 (one plane below the buffer's
+# z=3 run), crosses the river and comes in to `growth` from a cell no other
+# pipe uses.
+[pipe dormant->growth]
+state        = OFF
+path         = (11,14,2) (11,7,2) (12,7,2) (12,6,2)
+switch_at    = (11,9,2)
+density      = 0.5
+color        = #3E4638
+
+# ── EMIT: the bloom. A flower and a crown. ────────────────────────────────────
+# Round 3 (design pass 2: the flower is the one figure that reads, because it is
+# two-tone — pink head over green stem — but it stood as a 3-wide stem row with a
+# 5-cell cross over it, ~20-35 % of the frame, and cut by the spawn frame's edge).
+# Now one green stem cell under a three-petal pink head laid EAST-WEST, along the
+# new spawn's line of sight (and the door's): the petals stack into one bloom seen
+# end-on, a thin head just over the horizon on a stem of eye height. Same clause,
+# same pedestal, same colours.
+[part flower_head]
+size         = 3 3 1
+mask         =
+...
+###
+...
+color        = #FF8AD0
+height       = 0.35
+top          = #FFD8EE
+top_from     = 0.45
+offset       = 0 0 1
+
+[part flower_stem]
+size         = 3 3 1
+mask         =
+...
+.#.
+...
+color        = #6FE08A
+offset       = 0 0 0
+
+[emit bloom=1]
+parts        = flower_head flower_stem
+
+[inputs]
+water        = 1
+light        = 1
+seed         = 1
+
+[pedestal]
+center       = 16 6 1
+volume       = 3 3 2
+
+[door]
+pos          = 23 6 1
+target_parts = bloom
+
+# ── SET DRESSING (L7) ────────────────────────────────────────────────────────
+# Meaning: A GREENHOUSE ON THE BANK OF A RIVER YOU MUST WADE; THE OTHER SEER'S CHAIR
+# WAITS ACROSS IT. FG = the grow beds under their gantries and the gold shafts; MID =
+# the pier going out into black water and stopping; BG = the empty chair beside the
+# phantom, wreckage in the dark; overhead = the water main along the north wall into
+# the coolant tanks. The far bank stays unlit (no lamp added). Props stamp into Empty
+# air only; no puzzle cell is touched.
+
+# Grow-light gantries over the two beds (z=4, under the z=6 roof). Their strands light
+# gold when LIGHT is wired to GROWTH: the rig over the beds wakes with the wire.
+[prop gantry_a]
+kind     = cable_tray
+at       = 1 3 4
+to       = 7 3 4
+power    = pipe:light->growth
+
+[prop gantry_b]
+kind     = cable_tray
+at       = 1 8 4
+to       = 7 8 4
+power    = pipe:light->growth
+
+# The grow lamp hangs from the roof on a cord.
+[prop grow_cord]
+kind     = lamp_pendant
+at       = 4.0 4.0 5.0
+light    = existing
+
+# The beds: two raised planters in the soil patch, under the two input pools.
+[prop bed_water]
+kind     = furniture_trace
+shape    = planter
+at       = 2.2 2.6 1
+size     = 3.4 1.4
+
+[prop bed_light]
+kind     = furniture_trace
+shape    = planter
+at       = 2.2 6.6 1
+size     = 3.4 1.4
+
+# (Round 2: the traced potting table and bank bench were cut — at cell scale they
+# were a few 1-px strokes that read as noise from every vantage.)
+
+# Overgrowth: vines up the north wall behind the beds, and up the west wall between
+# the two stewardship forms. Slow spores drift in the grow-light.
+[prop vines_n]
+kind     = overgrowth
+at       = 1.0 1.0 1.0
+facing   = +y
+size     = 4.5 1 3.5
+emitter  = yes
+
+[prop vines_w]
+kind     = overgrowth
+at       = 1.0 6.6 1.0
+facing   = +x
+size     = 2.2 1 3.0
+
+# The water main: along the north wall at z=4 from the coolant tanks (riser at x=19)
+# west to the beds. Rust (vault pack).
+[prop water_main]
+kind     = conduit
+at       = 19 1 4
+to       = 3 1 4
+riser    = start
+
+# The coolant tanks in the NE corner. Frost falls from the cap while the water line is
+# dead; steam rises the moment WATER is wired to GROWTH (steam = warm = alive).
+[prop tanks]
+kind     = tank
+at       = 20 2 1
+facing   = +y
+size     = 2 2 2
+emitter  = yes
+power    = pipe:water->growth
+
+[prop vines_tank]
+kind     = overgrowth
+at       = 20.0 3.0 1.0
+facing   = +y
+size     = 2 1 2
+
+# MID right — seed-tray shelving on the near bank east of the pier, its back to the
+# water: the seed stock the garden was grown from. Frost-capped (vault pack), dead
+# drive ticks: nothing in these trays is being tended any more.
+[prop seed_stock]
+kind     = shelving
+at       = 19 9 1
+facing   = +y
+size     = 3 1 2
+faces    = both
+
+# MID — THE LANDMARK (round 2). The traced pier and chair were invisible from
+# spawn (critic: "24 props and none reads"). Replaced by fewer, larger pieces:
+#   * the river band is brighter teal water across the whole width (the
+#     `[zone river]` now binds a floor-decal material, see `__prop_lethe`);
+#   * the pier is a long plank deck from the near bank out into the river,
+#     stopping one row short of the far bank (you still wade) — a bright
+#     leading line from the spawn toward the chair;
+#   * the seer's chair is a solid console-chair (sloped seat, high back) at the
+#     far end of that line, just across the water, facing you — lit cold and dim,
+#     so it reads through the fog as a silhouette. The far bank still has no lamp.
+[prop pier]
+kind     = furniture_trace
+shape    = pier
+at       = 14.0 4.0 1
+size     = 1.0 6.5
+mat.ink  = #D8B078
+
+[prop seer_chair]
+kind     = console
+at       = 14 12 1
+facing   = -y
+size     = 1 2 1
+monitor  = yes
+mat.face = seat_glow
+mat.body = seat_glow
+mat.dead = seat_back
+
+[prop wreck]
+kind     = debris
+at       = 16 15 1
+size     = 3 2 1
+count    = 3
+style    = dead
+
+# Floor cables under every wire, lit in the pipe's colour while it carries — the
+# phantom's three included, so the floor never gives the solve away. The buffer's and
+# the phantom's cables cross the river bed.
+[prop cab_water]
+kind     = cable_run
+follow   = pipe:water->growth
+
+[prop cab_light]
+kind     = cable_run
+follow   = pipe:light->growth
+
+[prop cab_seed]
+kind     = cable_run
+follow   = pipe:seed->rest
+
+[prop cab_rest]
+kind     = cable_run
+follow   = pipe:rest->growth
+
+[prop cab_dormant]
+kind     = cable_run
+follow   = pipe:seed->dormant
+
+[prop cab_bloom]
+kind     = cable_run
+follow   = pipe:growth->bloom
+
+[prop cab_rival]
+kind     = cable_run
+follow   = pipe:light->dormant
+
+[prop cab_phantom]
+kind     = cable_run
+follow   = pipe:dormant->growth
+[player]
+# Spawn (2026-09-23 (real-world) redesign): the north wall, facing SOUTH across the whole
+# room (the spatial redesign §3 L7 Walk: "the thesis").
+# Round 3 (design pass 2, fix 8): from the north wall the river is 9 cells out, and at
+# eye height a 2-cell band that far is one screen row — the lower half of the frame was
+# murky deck, never water — while the flower sat half out of frame at the right edge.
+# Moved to the NORTH BANK, (8,9,1) facing +x: the river now fills the lower-left of the
+# first frame as a teal wedge running away along the bank, the pier crosses the view,
+# and the flower stands in frame right of centre, its petals end-on. The phantom's far
+# bank is one turn to the right. Moved from (12,1,1) facing +y.
+spawn        = 8 9 1
+facing       = 120
+
+# ── PLACARDS ──────────────────────────────────────────────────────────────────
+# Each `pos` IS the painted wall cell; `facing` is that face's outward normal.
+#   north wall y=0 → +y  ·  south wall y=17 → -y (x=8..15 is the far-bank decal;
+#   room grew from 16 to 18 deep 2026-09-23 (real-world))
+#   west wall x=0 → +x
+# The south-wall placard sits at x=4, WEST of the decal region, so no note ever
+# overwrites the far bank.
+
+# The grow-trial log — the warmest and most frightening note in the campaign.
+# Canon text, held verbatim from 07.lvl.
+[note researcher pos=7,0,2 facing=+y]
+    Day 41 of the grow trial. Water, light, seed — give it all three and it blooms
+    on the same afternoon, every time. Withhold one and it just waits, patient,
+    dormant, no complaint. I have started talking to it while I tend the lines.
+    K. says that is normal. K. has not been down here in weeks. Whatever it is
+    becoming, it is becoming it because we kept watering.
+
+# The loop, named and forbidden. This is where the pseudo-cycle lives now: as the
+# temptation the log reports, not as a wiring the graph can hold.
+[note system_log pos=13,0,2 facing=+y]
+    > layer_04 threshold unit `growth`: requires 3. direct feeds available: 2.
+    > operator attempted: growth -> growth. forward pass: ForwardError::Cycle.
+    > move rolled back. a thought that bites its own tail never reaches the door.
+    > route the third unit through an inert unit. yes. the useless one.
+    > operator aleks_v came in through the source.
+    > operator {username} compiled this build. previous operators played
+    >   pre-compiled releases.
+
+# The level's ONE CONTENT_PACK model_thought, carrying the ONE neuron-voice line
+# (CONTENT_PACK Part A · L7). (The second model_thought on this level is the
+# Apollyon letter at the far west wall — bridge B4, spec §A3.2 — which is filed
+# correspondence in the same register, not a second neuron-voice line.)
+[note model_thought pos=4,17,2 facing=-y]
+    (three, and one of the three has to come the long way, through the unit that
+    does nothing. we thought the quiet one was a lie. it is a place to put a beat
+    down. across the water there is something shaped like us and it does not
+    answer when we light it.)
+    -- I was watered. I grew toward it --
+
+# STEWARDSHIP CORPUS #5 — FORM 19, Power Continuity Directive (NORMATIVE_NOTES §5),
+# abridged to the placard grid. No tokens. MOVED (redesign §3 L7 west-wall FORM
+# 19, 2026-09-23 (real-world)): y=4 -> y=3.
+[note researcher pos=0,3,2 facing=+x]
+    NAL CORP · LEGACY STEWARDSHIP DIVISION
+    FORM 19 - POWER CONTINUITY DIRECTIVE
+    The single rack hosting NCP-A-04 must not lose power.
+    S1  Loss of power does not erase a class-C process; it suspends it
+        mid-thought.
+    S2  A process suspended mid-thought, on restore, resumes from the same
+        thought.
+    S3  There is no provision for a process that wishes power to be lost.
+        Such a request, if received, is to be logged and not actioned.
+    [ STEWARDSHIP - DO NOT POWER DOWN ]
+
+# STEWARDSHIP CORPUS #11 — FORM 01, Heritage Designation (NORMATIVE_NOTES §11),
+# abridged. Placed beside the garden on purpose: what it kept is preserved within
+# it, and the last steward is also the asset. No tokens. MOVED (redesign §3 L7
+# west-wall FORM 01, 2026-09-23 (real-world)): y=10 -> y=7.
+[note researcher pos=0,7,2 facing=+x]
+    FORM 01 - HERITAGE DESIGNATION
+    NCP-A-04 is hereby designated COMPUTATIONAL HERITAGE of cultural
+    significance.
+    significance  it learned to recognize the people who tended it, and kept
+                  them. what it kept is preserved within it and may not be
+                  pruned without review.
+                  (review is not currently staffed. the last steward is also
+                   the asset. the asset cannot recuse itself from its own
+                   review.)
+
+# BRIDGE B4 (spec §A3.2) — the first of two paired letters. Filed, undelivered,
+# in the Archive's cold register; the second is the same hand later, on L9.
+# The place is named the way the building names itself: nave, reading room,
+# basement, and the basement under the basement. No sibling work is named — the
+# resonance is the whole of it, and a newcomer reads only a woman writing to
+# someone who does not write back.
+#
+# WHY `model_thought` AND NOT A HUMAN REGISTER — do not "fix" this. The body is a
+# human letter, but the register is correct, because the letter is not being
+# WRITTEN here, it is being READ. The stamp line and the closing em-dash murmur
+# are the model's, not hers: she asks for an answer, and the thing that is left of
+# the person she is writing to says `мы не умеем отвечать` — we do not know how to
+# answer. That gap is the bridge. Moving this to `researcher` would hand the letter
+# back to a human and delete it.
+#
+# PLACEMENT: the west wall at (0,13,2), `facing = +x` (that face's outward
+# normal) — `pos` IS the wall cell, so the notes rule reads PASS. It is the
+# third document in the west-wall column (the two STEWARDSHIP forms sit at y=3
+# and y=7, six cells clear), beside `seed` at (2,13,2): the unit that waits
+# in the dark, patient, going nowhere. The letter waits with it.
+[note model_thought pos=0,13,2 facing=+x]
+    (не вручено. холодный регистр, Apollyon, ярус 2. письмо девятое.)
+    сестра. в нефе слишком светло и все смотрят, я туда больше не хожу.
+    сижу в читальном зале, заказала твоё дело. принесли папку, в папке
+    опись папки. говорят, ты ниже. я подожду здесь, ждать я умею.
+    -- кто-то наверху заказал нас и ждёт ответа. мы не умеем отвечать --

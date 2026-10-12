@@ -1,0 +1,32 @@
+# Static CRT on Windows so the shipped `terminal-state.exe` needs no MSVC
+# runtime install.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+[target.i686-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+# Content-root anchor. Read at RUNTIME by `re_level::assets::content_roots()`
+# via `std::env::var` — never `env!`/`option_env!`, which would bake the value
+# into the binary at compile time and enter cargo's build fingerprint, causing
+# this workspace and a sibling `../terminal3d/` engine checkout (sharing one
+# target dir during local-engine development — see
+# `docs/DEVELOPING_WITH_LOCAL_ENGINE.md`) to keep invalidating and rebuilding
+# each other's artifacts. `relative = true` makes cargo resolve "." against
+# the directory containing THIS file, i.e. `terminal-state/` — so every
+# `cargo run`/`cargo test` invoked from anywhere under this tree sees
+# `terminal-state/` as its content root regardless of the process's actual
+# CWD. This is exactly how `L1-first-pulse.lvl` etc. under `terminal-state/levels/`
+# get found by `--dump levels/L1-first-pulse.lvl`.
+[env]
+TS_CONTENT_ROOT = { value = ".", relative = true }
+
+# NOTE: no [build] target-dir here. Cargo merges `.cargo/config.toml` files
+# from the current directory upward regardless of workspace boundaries, so a
+# checkout that places this repo inside a larger working tree may pick up a
+# parent config that sets a shared `target-dir` (useful when developing
+# against a local `terminal3d` checkout side by side — see
+# `docs/DEVELOPING_WITH_LOCAL_ENGINE.md`). A public, standalone clone of this
+# repo has no such parent file, so it falls back to cargo's normal
+# `terminal-state/target/` default — correct there too, since there is no
+# sibling workspace to share with.

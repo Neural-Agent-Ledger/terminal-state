@@ -1,0 +1,166 @@
+[workspace]
+resolver = "2"
+# This is the GAME's OWN workspace, physically laid out as `terminal-state/`,
+# a sibling of the engine+editor workspace `terminal3d/` (see
+# `../terminal3d/Cargo.toml`). `crates/*` contains exactly one member,
+# `terminal_state`. This stays a real cargo workspace (not a single-crate
+# manifest) so a second game crate could be added later without another
+# re-layout.
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+# Code is GPL-3.0-or-later (see LICENSE); the crate inherits this via
+# `license.workspace = true`. Game content (levels, lore, splash art) is
+# CC BY-SA 4.0 — see LICENSE-CONTENT and PROVENANCE.toml.
+license = "GPL-3.0-or-later"
+
+[workspace.dependencies]
+# Bevy headless: ONLY the features needed for MinimalPlugins + ScheduleRunnerPlugin
+# + bevy_state. Explicitly NO bevy_render / bevy_winit / wgpu.
+bevy = { version = "0.19", default-features = false, features = [
+    "bevy_state",
+    "std",
+] }
+
+# ─────────────────────────── ecosystem reuse ────────────────────────────────
+# bevy_rand — reproducible, ECS-managed RNG as a Bevy resource (`Entropy`).
+# Re-verified 2026-09-28 at 0.15.2 — still the newest release compatible with
+# bevy 0.19. `../terminal3d/Cargo.toml` carries the SAME version string for
+# `engine/re_runtime`'s own use — keep the two `Cargo.lock`s aligned after a
+# `cargo update` on either side.
+bevy_rand = { version = "0.15", features = ["wyrand"] }
+bevy_prng = { version = "0.15", features = ["wyrand"] }
+
+# bevy_mod_debugdump — dump the Bevy schedule/system graph to GraphViz. 0.16
+# targets bevy ^0.19; bevy_render is OPTIONAL so it runs fully headless with
+# default-features off. ADOPTED as a dev-only tool behind terminal_state's
+# `debugdump` feature (no effect on the shipped build). Re-verified
+# 2026-09-28 — 0.16.0 is still the newest release. GAME-ONLY: no engine/editor
+# crate uses it, so it is NOT carried into `../terminal3d/Cargo.toml`.
+bevy_mod_debugdump = { version = "0.16", default-features = false }
+
+# NOTE on the two entries below (glam, dot_vox): `terminal_state` does not use
+# either DIRECTLY, but Cargo resolves every reachable package's
+# `{ workspace = true }` fields against the ONE workspace context that is
+# doing the loading — a path dependency living outside this workspace's own
+# `members` glob (everything under `../terminal3d/`) does NOT get its own
+# independently-discovered workspace for inheritance purposes while it is
+# being reached from HERE; it inherits from THIS table. So this workspace's
+# `[workspace.dependencies]` must carry every key that ANY engine/editor crate
+# reachable from `terminal_state`'s own dependency graph (incl. dev-deps:
+# re_voximport, re_lvlcheck, re_golden, and everything they in turn depend on)
+# resolves via `{ workspace = true }` — not just the keys `terminal_state`
+# itself uses. Confirmed empirically (2026-09-28): `cargo metadata` failed to
+# parse `re_core`'s manifest ("dependency.glam was not found in
+# workspace.dependencies") until `glam` was added here, even though `re_core`
+# is a `../terminal3d/` member, not a member of this workspace.
+glam = "0.33"
+# Needed transitively via `re_level` (a `[vox NAME]` section reads a `.vox`
+# model with the same loader `re_voximport` uses) and `re_voximport` itself
+# (a terminal_state dev-dependency, for the campaign_prop_style agreement test).
+dot_vox = "5"
+serde = { version = "1", features = ["derive"] }
+# toml 1.x (dependency-refresh pass, 2026-09-28) — bumped from 0.8. Our usage
+# is exactly `toml::from_str`/`toml::to_string` over plain serde structs (no
+# `toml::Value`/`Table`/`Datetime` anywhere in the tree), which is unchanged
+# across the 0.8 -> 1.x jump; verified by a scratch build before landing here.
+toml = "1"
+
+# ─────────────────────────────────────────────────────────────────────────
+# BEGIN engine-deps — the terminal3d engine crates, all pinned to one release tag. Bump every line together.
+re_core      = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_world     = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_level     = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_puzzle    = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_render    = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_present   = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0", default-features = false }
+re_audio     = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_glitch    = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_postfx    = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_asciifx   = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_runtime   = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+# dev-only (tests):
+re_voximport = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_lvlcheck  = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+re_golden    = { git = "https://github.com/Neural-Agent-Ledger/terminal3d", tag = "v0.1.0" }
+# END engine-deps ───────────────────────────────────────────────────────────
+
+# ─────────────────────── Static-analysis (SMART-DENY POLICY) ────────────────
+# Triage-driven policy (2026-06-24): ~3,897 warnings measured under full
+# pedantic+nursery; the cast_* family (2,070 hits) and suboptimal_flops (414)
+# are confirmed noise for a real-time raycaster codebase.  float_cmp is
+# high-value in lib code but 247/249 hits were test asserts (handled via
+# cfg_attr(test, allow(clippy::float_cmp)) at each crate root).
+#
+# re_present keeps a MANUAL [lints] block (can't inherit + override
+# unsafe_code simultaneously) — its clippy group entries mirror this table.
+[workspace.lints.rust]
+# re_present's manual block downgrades this to "warn" for its FFI unsafe sites
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+# Base groups: all errors, pedantic/nursery advisory
+all      = { level = "deny",  priority = -1 }
+pedantic = { level = "warn",  priority = -1 }
+nursery  = { level = "warn",  priority = -1 }
+
+# ── High-value promotions (override the groups above) ──────────────────────
+# float_cmp: exact float equality is almost always a bug in lib code;
+# test-module hits are suppressed per-crate via cfg_attr(test, allow(...)).
+float_cmp        = "deny"
+# disallowed_types: catches terminal/audio types leaking into wrong crates.
+disallowed_types = "deny"
+
+# ── Confirmed-noise demotions (override pedantic/nursery) ──────────────────
+# cast_*: 2,070 hits — all benign index/length casts in the raycaster hot path.
+cast_possible_truncation = "allow"
+cast_sign_loss           = "allow"
+cast_possible_wrap       = "allow"
+cast_precision_loss      = "allow"
+# suboptimal_flops: 414 hits — fadd/fmul reordering; no accuracy impact in
+# the shading/synth math, and the compiler already vectorises these.
+suboptimal_flops         = "allow"
+
+# ─────────────────────────── DISK HYGIENE ───────────────────────────────────
+# Measured 2026-09-06: target/ had grown to 90.5 GB — 37.3 GB of it `.pdb`
+# debug symbols (861 files; the `terminal-state` bin and `terminal_state` lib
+# weigh ~200 MB EACH, one per build hash, and cargo never garbage-collects the
+# stale ones) and 23.6 GB of
+# dependency `.rlib`s (libbevy_pbr alone: 438 MB). Two knobs fix the source:
+#
+#   • debug = "line-tables-only" — keeps file:line in every backtrace (all a
+#     playtest crash report needs) but drops the variable/type tables that make
+#     up the bulk of a PDB. Trade: a step-debugger can no longer inspect locals
+#     in dev builds. Use `--profile release` (unstripped) if you need that.
+#   • package."*" debug = false — dependencies are not code we debug. Bevy and
+#     friends compile without symbols; OUR crates keep line tables.
+#
+# See scripts/prune-target.ps1 (+ .sh) for the periodic sweep of what still
+# accumulates: incremental caches and stale per-hash artifacts.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+
+[profile.release]
+# DEV / PLAYTEST builds (`cargo run --release`). NOT stripped — keep debug symbols
+# so a crash during playtest still gives a usable backtrace. Fast-ish compile.
+opt-level = 3
+lto = "thin"
+
+# SHIPMENT build — `cargo build --profile dist -p terminal_state` → a lean self-contained
+# ~4.65 MB .exe (vs 5.8 MB unoptimised), with NO perf trade:
+#   • strip          → drops debug symbols. Zero perf impact. Biggest size win.
+#   • lto = "fat"    → cross-crate inlining + dead-code elimination. Usually FASTER.
+#   • codegen-units 1→ whole-crate optimization. Usually FASTER.
+#   • opt-level stays 3 (performance > size). panic stays unwind (clean terminal
+#     restore on a crash). opt-level "s" was tried (3.65 MB) but rejected — not
+#     worth any perf trade. Use this profile ONLY for the final packaged artifact.
+[profile.dist]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+strip = true

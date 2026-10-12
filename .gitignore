@@ -1,0 +1,54 @@
+# Rust / cargo build output. When developing against a local sibling engine
+# checkout this repo can share a target dir with it (see .cargo/config.toml),
+# but the pattern is anchored the same way either way.
+/target/
+**/*.rs.bk
+
+# MSVC debug symbols / incremental link state.
+*.pdb
+*.ilk
+/build/
+/bin/
+# NOTE: these MUST stay anchored — an unanchored `bin/` silently untracks
+# `crates/terminal_state/src/bin/*.rs` ([[bin]] targets).
+
+# Level-editor scratch: `ts_editor` (the sibling engine repo's tool) writes
+# preview/playtest sidecars and autosaves under `levels/` at runtime. Never
+# tracked.
+/levels/_scratch/
+/levels/.autosave/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated ANSI dumps (the ascii_fx-style gallery tooling this crate still
+# carries as a dev script)
+*.ans
+/crates/terminal_state/render_gallery.py
+__pycache__/
+*.py[cod]
+
+# Archives: never tracked (provenance rule)
+*.zip
+*.7z
+*.rar
+
+# Local scratch / debug output
+*.log
+
+# Safeguard: private working files that must never be committed here, even if
+# a copy lands in the tree by accident.
+STATUS.md
+PROJECT.md
+memory/
+.claude/
+docs/internal/
+scratch*/
+*.log

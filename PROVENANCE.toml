@@ -1,0 +1,283 @@
+# PROVENANCE.toml — origin and licence of every content file in this repository.
+#
+# Scope: every file under levels/, assets/ and docs/lore/, plus the two other
+# non-code data sets that ship inside the crate (code-wall text snapshots and
+# test fixture levels). Source code under crates/ is covered by LICENSE
+# (GPL-3.0-or-later) and is not listed file by file. The code-wall snapshots
+# and test fixtures below are copies of terminal3d engine files and keep the
+# engine's licence (`engine_licence`).
+#
+# Fields:
+#   path     file path relative to the repository root
+#   origin   "authored"  — written by TERMINAL STATE contributors for this project
+#            "generated" — output of a program; `generator` names it
+#            "derived"   — a copy or adaptation of another file; `from` names it
+#            "third-party" — not ours; needs `source` and a committed licence file
+#   licence  SPDX identifier
+#   notes    anything a re-user needs to know
+#
+# A new file under levels/, assets/ or docs/lore/ needs an entry here in the
+# same PR (see CONTRIBUTING.md, "Assets and provenance").
+#
+# At the time of writing there are no third-party files in this repository.
+
+[defaults]
+attribution = "TERMINAL STATE contributors"
+content_licence = "CC-BY-SA-4.0"
+code_licence = "GPL-3.0-or-later"
+engine_licence = "MIT OR Apache-2.0"
+
+# ── levels/: campaign (L1–L12), in campaign order ─────────────────────────
+
+[[file]]
+path = "levels/L1-first-pulse.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 1. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L2-two-make-three.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 2. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L3-full-spectrum.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 3. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L4-the-angle.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 4. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L5-soft-footstep.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 5. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L6-polysemantic.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 6. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L7-hidden-depths.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 7. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L8-cold-room.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 8. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L9-stereopsis.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 9. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L10-lying-door.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 10. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L11-inner-circuit.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 11. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/L12-closing.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign level 12. Hand-authored .lvl text; comment blocks are part of the content."
+
+[[file]]
+path = "levels/campaign.toml"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Campaign manifest: order, movement tags, fog curve. Embedded in the binary at compile time."
+
+# ── levels/: archive rooms 01–08 ─────────────────────────────────────────
+
+[[file]]
+path = "levels/01.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Archive room 01, kept verbatim with its lore comment blocks. The terminal3d engine repository also carries a copy of this level, licensed MIT OR Apache-2.0 there."
+
+[[file]]
+path = "levels/02.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Archive room 02, kept verbatim with its lore comment blocks. The terminal3d engine repository also carries a copy of this level, licensed MIT OR Apache-2.0 there."
+
+[[file]]
+path = "levels/03.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Archive room 03, kept verbatim with its lore comment blocks. The terminal3d engine repository also carries a copy of this level, licensed MIT OR Apache-2.0 there."
+
+[[file]]
+path = "levels/04.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Archive room 04, kept verbatim with its lore comment blocks. The terminal3d engine repository also carries a copy of this level, licensed MIT OR Apache-2.0 there."
+
+[[file]]
+path = "levels/05.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Archive room 05, kept verbatim with its lore comment blocks. The terminal3d engine repository also carries a copy of this level, licensed MIT OR Apache-2.0 there."
+
+[[file]]
+path = "levels/06.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Archive room 06, kept verbatim with its lore comment blocks. The terminal3d engine repository also carries a copy of this level, licensed MIT OR Apache-2.0 there."
+
+[[file]]
+path = "levels/07.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Archive room 07, kept verbatim with its lore comment blocks. The terminal3d engine repository also carries a copy of this level, licensed MIT OR Apache-2.0 there."
+
+[[file]]
+path = "levels/08.lvl"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Archive room 08, kept verbatim with its lore comment blocks. The terminal3d engine repository also carries a copy of this level, licensed MIT OR Apache-2.0 there."
+
+# ── assets/ ──────────────────────────────────────────────────────────────
+
+[[file]]
+path = "assets/splash/eye_frames.txt"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Splash eye animation frames (box-drawing and block characters)."
+
+[[file]]
+path = "assets/splash/press_key.txt"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Splash prompt line."
+
+[[file]]
+path = "assets/splash/title_terminalstate.txt"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Title lettering in block characters, drawn by hand in this project. It is not rendered from a FIGlet or any other third-party font."
+
+[[file]]
+path = "assets/texture/genplate_tex.png"
+origin = "generated"
+generator = "terminal3d: editor/re_voximport, bin gen_texfixture"
+licence = "MIT OR Apache-2.0"
+sha256 = "b5ed9939192c5727db3cbd150f7fd29593862079e7851e0df977a3d0dd663f63"
+notes = "Procedural texture fixture, copied from the engine because levels/L8-cold-room.lvl references it. Licensed like the engine code that generates it, not under CC BY-SA."
+
+# ── docs/lore/ — story canon. Contains spoilers and puzzle solutions. ────
+
+[[file]]
+path = "docs/lore/CONTENT_PACK_L1-L12_DRAFT.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Design and story text, written largely in Russian."
+
+[[file]]
+path = "docs/lore/EMILY.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Design and story text."
+
+[[file]]
+path = "docs/lore/FORM_A7_OPERATOR_DIAGNOSTIC.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Diegetic form. Embedded in the binary by crates/terminal_state/src/code_panels.rs and shown on a code wall."
+
+[[file]]
+path = "docs/lore/NORMATIVE_NOTES.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Design and story text, written largely in Russian."
+
+[[file]]
+path = "docs/lore/PUZZLE_CONCEPTS.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Design and story text, written largely in Russian."
+
+[[file]]
+path = "docs/lore/PUZZLE_ESSENCE_PLAIN.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Design and story text."
+
+[[file]]
+path = "docs/lore/PUZZLE_PROGRESSION_L1-L12.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Design and story text."
+
+[[file]]
+path = "docs/lore/PUZZLE_SOLUTIONS_L1-L12.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Exact puzzle graphs and solutions for L1-L12. Spoilers."
+
+[[file]]
+path = "docs/lore/STORY_BIBLE.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Design and story text, written largely in Russian. The setting (the corporation and its forms) is shared with other works by the same author, who publishes this game's content, including this text, under CC BY-SA 4.0."
+
+[[file]]
+path = "docs/lore/WORD_STORY.md"
+origin = "authored"
+licence = "CC-BY-SA-4.0"
+notes = "Design and story text, written largely in Russian."
+
+# ── crates/terminal_state/panels/ — code-wall text snapshots ─────────────
+
+[[file]]
+path = "crates/terminal_state/panels/code_wall.rs.txt"
+origin = "derived"
+licence = "MIT OR Apache-2.0"
+notes = "Frozen snapshot of a terminal3d engine source file, shown as text on an in-game code wall. It keeps the engine's licence, not the game's."
+
+[[file]]
+path = "crates/terminal_state/panels/puzzle_lib.rs.txt"
+origin = "derived"
+licence = "MIT OR Apache-2.0"
+notes = "Frozen snapshot of a terminal3d engine source file, shown as text on an in-game code wall. It keeps the engine's licence, not the game's."
+
+[[file]]
+path = "crates/terminal_state/panels/render_lib.rs.txt"
+origin = "derived"
+licence = "MIT OR Apache-2.0"
+notes = "Frozen snapshot of a terminal3d engine source file, shown as text on an in-game code wall. It keeps the engine's licence, not the game's."
+
+# ── crates/terminal_state/tests/fixtures/ — test-only levels ─────────────
+
+[[file]]
+path = "crates/terminal_state/tests/fixtures/21-emitter-showcase.lvl"
+origin = "derived"
+licence = "MIT OR Apache-2.0"
+notes = "Copy of a terminal3d example level used only by this crate's tests. It keeps the engine's licence, not the game's."
+
+[[file]]
+path = "crates/terminal_state/tests/fixtures/T0-trigger.lvl"
+origin = "derived"
+licence = "MIT OR Apache-2.0"
+notes = "Copy of a terminal3d example level used only by this crate's tests. It keeps the engine's licence, not the game's."
+

@@ -1,0 +1,161 @@
+# CI for the terminal-state game repo.
+#
+# This workflow targets the PUBLISHED shape of this repo: `Cargo.toml`'s
+# `# BEGIN engine-deps` … `# END engine-deps` block is git dependencies on a
+# tagged `terminal3d` release, so a plain `actions/checkout@v4` of this repo
+# alone is sufficient — cargo fetches the engine itself, exactly like any
+# other git dependency. No engine checkout step is needed here. (During local
+# development against an unreleased engine change, that block can instead
+# hold `path = "../terminal3d/…"` deps — see
+# `docs/DEVELOPING_WITH_LOCAL_ENGINE.md`. This workflow does not special-case
+# that — it is written for what ships.)
+#
+# Testing a PR against an UNRELEASED engine change: see the disabled
+# `test-against-local-engine` job at the bottom. A tagged engine release is
+# the normal case; that job exists so a reviewer can flip `if: true` on one
+# PR that depends on it, run it once, then revert — never as a standing
+# green check, because "does this even build against a change nobody tagged
+# yet" is a question a specific PR asks, not one every push should ask.
+#
+# DCO: this repository is DCO-only, not CLA (see CONTRIBUTING.md "Sign-off
+# (DCO)" and the `DCO` file at the repo root). Enforcement is the GitHub DCO
+# App (https://github.com/apps/dco), installed on the repository rather than
+# run as a workflow job here — see the identical note in terminal3d's ci.yml.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  test:
+    name: fmt, clippy, test, dist build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install Linux audio/input headers
+        if: runner.os == 'Linux'
+        # Same two engine deps as terminal3d's own CI: kira (re_audio) needs
+        # ALSA, gilrs (re_present, gamepad input) needs udev. The game does
+        # not add any Linux-only system dependency of its own.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev pkg-config
+
+      - name: Install Rust (stable, rustfmt + clippy)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry and target
+        uses: Swatinem/rust-cache@v2
+
+      - name: cargo fmt --check
+        run: cargo fmt --all --check
+
+      - name: cargo clippy (workspace lints deny errors; pedantic/nursery are advisory)
+        run: cargo clippy --workspace --all-targets
+
+      - name: cargo test --workspace
+        shell: bash
+        run: |
+          # rules/owner-workstation.md's two guards, kept identical between a
+          # local run and this CI run: never touch a real save/settings
+          # profile, never open an audio device.
+          export TS_SAVE_DIR="$(mktemp -d)"
+          export TS_AUDIO_SILENT=1
+          cargo test --workspace --no-fail-fast
+
+      - name: cargo build --profile dist (shipment-profile smoke build)
+        run: cargo build --profile dist -p terminal_state
+
+  # ── Testing against an unreleased engine change (see the file header) ──
+  #
+  # Disabled by default (`if: false` on the job — GitHub Actions still lists
+  # the job as skipped rather than omitting it, which is the point: the
+  # recipe stays visible and syntax-checked by every normal CI run instead of
+  # bit-rotting as a comment). To use it for one PR: change `if: false` to
+  # `if: true`, push, look at the result, then revert the `if` before merging
+  # — this job must never be the thing that makes a PR green on its own,
+  # because a green run here proves the PR works against a moving engine
+  # branch, not against any tagged release a player could actually get.
+  #
+  # Mechanism: check out both repos side by side (mirroring
+  # docs/DEVELOPING_WITH_LOCAL_ENGINE.md's "clone side by side" recipe), then
+  # add a `[patch]` table pointing the git dependency at the local engine
+  # checkout instead of the tag — same effect as that doc's
+  # `ts-dev/.cargo/config.toml`, just written by the workflow instead of by
+  # hand. `ENGINE_REF` is the engine branch/SHA under test; set it to your
+  # engine PR's branch when you flip this job on.
+  test-against-local-engine:
+    name: test against an unreleased engine change (manual, off by default)
+    if: false
+    runs-on: ubuntu-latest
+    env:
+      ENGINE_REF: main # change to the engine branch/SHA you are testing against
+    steps:
+      - name: Check out terminal-state
+        uses: actions/checkout@v4
+        with:
+          path: terminal-state
+
+      - name: Check out terminal3d @ ${{ env.ENGINE_REF }}
+        uses: actions/checkout@v4
+        with:
+          repository: Neural-Agent-Ledger/terminal3d
+          ref: ${{ env.ENGINE_REF }}
+          path: terminal3d
+
+      - name: Install Linux audio/input headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev pkg-config
+
+      - name: Install Rust (stable, rustfmt + clippy)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry and target
+        uses: Swatinem/rust-cache@v2
+
+      - name: Patch the engine-deps git URL onto the local checkout
+        working-directory: terminal-state
+        run: |
+          mkdir -p .cargo
+          {
+            echo '[patch."https://github.com/Neural-Agent-Ledger/terminal3d"]'
+            echo 're_core      = { path = "../terminal3d/engine/re_core" }'
+            echo 're_world     = { path = "../terminal3d/engine/re_world" }'
+            echo 're_level     = { path = "../terminal3d/engine/re_level" }'
+            echo 're_puzzle    = { path = "../terminal3d/engine/re_puzzle" }'
+            echo 're_render    = { path = "../terminal3d/engine/re_render" }'
+            echo 're_present   = { path = "../terminal3d/engine/re_present" }'
+            echo 're_audio     = { path = "../terminal3d/engine/re_audio" }'
+            echo 're_glitch    = { path = "../terminal3d/engine/re_glitch" }'
+            echo 're_postfx    = { path = "../terminal3d/engine/re_postfx" }'
+            echo 're_asciifx   = { path = "../terminal3d/engine/re_asciifx" }'
+            echo 're_runtime   = { path = "../terminal3d/engine/re_runtime" }'
+            echo 're_voximport = { path = "../terminal3d/editor/re_voximport" }'
+            echo 're_lvlcheck  = { path = "../terminal3d/editor/re_lvlcheck" }'
+            echo 're_golden    = { path = "../terminal3d/editor/re_golden" }'
+          } >> .cargo/config.toml
+
+      - name: cargo test --workspace (against the patched local engine)
+        working-directory: terminal-state
+        run: |
+          export TS_SAVE_DIR="$(mktemp -d)"
+          export TS_AUDIO_SILENT=1
+          cargo test --workspace --no-fail-fast

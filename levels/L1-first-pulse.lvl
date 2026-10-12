@@ -1,0 +1,640 @@
+# TERMINAL STATE — levels/L1-first-pulse.lvl
+#
+# L1 · "First Pulse" — SPATIAL REBUILD 2026-09-23 (real-world): a redesigned space
+# and puzzle graph. Movement P1 "THE LAB", load ▁,
+# onboarding. Identity: a dark stairwell in the sealed lab where a single red lamp is
+# the only thing awake, and you climb out of the murk toward first light.
+#
+# PUZZLE GRAPH: UNCHANGED (the redesign takes B unchanged — the shipped
+# graph). One input neuron R (IN=1), one output node `output` (T=1), one pipe
+# R→output with a single switch at (5,5,2), door target = output, power_budget = 1.
+# The single toggle IS the onboarding idea, not a stub.
+#
+# WHAT THIS PASS CHANGES (space only, per the redesign brief):
+#  - A NEW partition wall at x=10 (y=1..7, z=1..3) seals the ground-floor east bay:
+#    the only way onward from the ground floor is UP the stairs, not sideways.
+#  - NEW furnished benches on floor 2 (Object blocks, z=5, x=2..6, y=1 and y=7),
+#    clear of the stair shaft at y=3.
+#  - Two `[light]` lamps (the red pulse-lamp at the switch; a pale first-light lamp
+#    over the upstairs alcove) + `[atmosphere]` (ambient pulled to 0.07, cool
+#    key_color, `fog_height` so the murk visibly thins as you climb — the climb
+#    reads as a literal rise out of the dark) + `postfx = clean` (P1 movement
+#    request; the player's own POST-FX setting always wins).
+#  - `pulse_wall` fg darkened to #6A2424 so the red the player sees comes from the
+#    lamp, not the paint.
+# The `[cells]` build, the staircase, all node/pipe/door coordinates, `switch_at`,
+# `red_block`, and every note are UNCHANGED — LOCKED by the puzzle-graph doc.
+#
+# storey_height = 4 (4 ramp treads per storey, matching the prefab generator
+# crates/re_level/src/staircase.rs::straight_staircase).
+#
+# ── Geometry map (z-up; '#'=WallSolid '.'=Empty '_'=Floor '^'=Ceiling) ─────────
+#   Map size = 16 × 9 × 13  (x=0..15, y=0..8, z=0..12).
+#   z=0      ground-floor slab
+#   z=1..3   GROUND-FLOOR gameplay space  (spawn, node R, the pipe switch)
+#   z=4      SECOND-FLOOR slab + stairwell shaft + staircase landing
+#   z=5..7   SECOND-FLOOR gameplay space  (node output, the exit door)
+#   z=8      ceiling slab
+#
+# Staircase: straight_staircase(base=(3,3,0), dir=PosX, storey_height=4):
+#   Tread 1: (4,3,1) rampz posx
+#   Tread 2: (5,3,2) rampz posx
+#   Tread 3: (6,3,3) rampz posx
+#   Tread 4: (7,3,4) rampz posx
+#   Landing: (8,3,4) WallSolid Full  (feet on top = z=5.0 = floor-2 surface)
+#   z=4 stairwell shaft: (4..6, 3) open '.' so the player body emerges onto floor 2.
+#
+# Player path: spawn (2,5,1) on the ground floor → flip switch at (5,5,2) →
+# north to the y=3 stair corridor → east up the staircase → emerge on floor 2 →
+# east along the floor-2 hall to the output node + door at the far +x end.
+#
+# Dump (spawn view):  cargo run -q -p re_game -- --dump levels/L1-first-pulse.lvl --ansi
+# Interactive:        cargo run -p re_game --release -- levels/L1-first-pulse.lvl
+
+[meta]
+name        = level-01-first-pulse-tower
+title       = First Pulse
+version     = 1
+spec_rev    = 2026-09-23
+prop_style  = lab
+
+[room]
+size        = 16 9 13
+ambient     = solid
+storey_height = 4
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05). At most N pipes may be
+# ON at the same time; switching one ON at the cap is REFUSED (the pipe stays off
+# and nothing else changes), switching one OFF always frees a unit. Absent or 0 =
+# unlimited, which is what every non-campaign level still carries.
+# WHY: the forward pass has no inhibition, so activation is MONOTONE in the ON-set
+# — without a cap, all-switches-ON wins whenever anything wins, and every decoy in
+# the campaign is decorative. This is the number that makes wrong wiring cost.
+# THIS LEVEL: 1 of 1 pipe. The tutorial: there is exactly one wire and it must be hot.
+# The cap cannot bind here; it exists so the `power 1/1` readout is on screen from
+# the very first room and the player learns to read it before it costs them.
+power_budget = 1
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# ── LIGHTING ────────────────────────────────────────────────────────────────
+# Lamp count = the count of what you are learning (one motif per lamp):
+# L1 has 1 lamp (one pulse). A second, paler lamp waits upstairs as "first light".
+[light]
+pos         = 2.5, 5.5, 3.3
+color       = #FF4040
+radius      = 3.0
+intensity   = 1.3
+
+[light]
+pos         = 12.5, 4.5, 7.4
+color       = #C8D4F0
+radius      = 3.5
+intensity   = 0.6
+
+# Ground floor is visibly murkier than the upper floor: `fog_height` thins with
+# height, so the climb becomes a literal rise out of the dark.
+[atmosphere]
+ambient     = 0.07
+key_color   = #2A3040
+fog_height  = 0.5 0.35
+postfx      = clean
+
+# ── COLOR-FORWARD palette (inherits the levels/01.lvl "first light" identity) ──
+# Ground floor reads cold and dark — the cold-start void. Walls carry the
+# signal-red brick of the first pulse, darkened so the red the player sees comes
+# from the `[light]` lamp and not the paint; the floor is cool steel-blue; the
+# ceiling the darkest slate so "up" recedes. Saturated colour carries the volume
+# so the glyph field stays sparse and legible.
+[material pulse_wall]
+fg          = #6A2424
+bg          = #160505
+recipe      = brick aspect=2.0 mortar_w=0.18 grain=0.30
+surface     = wall_solid
+
+[material pulse_floor]
+fg          = #6FA6CE
+bg          = #08111E
+recipe      = grain scale=3.0 speck=0.15
+surface     = floor
+
+[material pulse_ceiling]
+fg          = #3A4658
+bg          = #050608
+recipe      = sky scale=6.0 density=0.06
+surface     = ceiling
+
+[palette]
+fog_color   = #100406
+fog_near    = 4.0
+fog_far     = 20.0
+
+# ── Dense [cells] grid ────────────────────────────────────────────────────────
+# 16 cols (x=0..15) × 9 rows (y=0..8) × 13 z-layers.
+[cells]
+size        = 16 9 13
+
+# z=0 — ground-floor slab. Interior = Floor '_'.
+################
+#______________#
+#______________#
+#______________#
+#______________#
+#______________#
+#______________#
+#______________#
+################
+
+# z=1 — ground-floor space. Ramp tread 1 at (4,3,1).
+# NEW partition wall at x=10 (y=1..7): seals the east bay, so the only way on is up.
+################
+#.........#....#
+#.........#....#
+#...#.....#....#
+#.........#....#
+#.........#....#
+#.........#....#
+#.........#....#
+################
+
+# z=2 — ground-floor space. Ramp tread 2 at (5,3,2).
+# Node R sits at (2,5,2); the pipe switch the player flips is at (5,5,2).
+#
+# THE VISIBLE PIPE RUN ('/' = WallTrace), (3,5,2)-(5,5,2)-(5,4,2).
+# `[room] render_pipes` stamps the whole R->output path as tagged WallTrace air —
+# but `[cells]` is AUTHORITATIVE for geometry and stamps LAST, so on this (the only
+# `[cells]`-authored) campaign level every one of those traces was demoted straight
+# back to '.' and the pipe stayed invisible. Painting the run here restores it: the
+# `[cells]` pass PRESERVES each cell's side_data, so these cells keep the live pipe
+# tag `re_level::stamp_pipes` gave them and still drive the flow scroll, the pool
+# words and the switch/cycle event pulses.
+#
+# ONLY the R->switch leg is painted, and only at z=2 — one plane ABOVE the walking
+# layer, so the caster's off-slice pass draws it overhead while collision (which
+# probes floor(eye_z) = 1 down here) never sees it. The rest of the path is
+# deliberately left as air: (5,3,2)/(6..8,3,2..3) run through the STAIRCASE corridor
+# where a climbing player's collision probe does reach z=2/z=3, and (13,3,5)/(13,4,5)
+# sit in the floor-2 walking layer one step from the exit door — a WallTrace there is
+# collidable and would wall the player off from the door.
+################
+#.........#....#
+#.........#....#
+#....#....#....#
+#..../....#....#
+#..///....#....#
+#.........#....#
+#.........#....#
+################
+
+# z=3 — ground-floor space. Ramp tread 3 at (6,3,3).
+# NEW partition wall at x=10 (y=1..7), continued from z=1/z=2.
+################
+#.........#....#
+#.........#....#
+#.....#...#....#
+#.........#....#
+#.........#....#
+#.........#....#
+#.........#....#
+################
+
+# z=4 — second-floor slab.
+# y=3: stairwell shaft at x=4,5,6 ('.'); tread4 at x=7 ('#'); landing at x=8 ('#').
+# All other interior = Floor '_'.
+################
+#______________#
+#______________#
+#___...##______#
+#______________#
+#______________#
+#______________#
+#______________#
+################
+
+# z=5 — second-floor space. The furnished upper hall: node output + door live here.
+# Two short interior partition stubs frame the output alcove at the +x end, so the
+# floor reads as a built room (an antechamber + an alcove) rather than a bare slab.
+#   partition stub A: (10,2,5) and (10,3,5)
+#   partition stub B: (10,5,5) and (10,6,5)
+# The gap at y=4 is the doorway-width passage from the stair-emergence hall into
+# the output alcove (x=11..14).
+# NEW furnished benches (Object 'O', z=5, x=2..6) on the north and south walls,
+# clear of the stair shaft at y=3 — the redesign's "benches z=5 (NEW)".
+################
+#..............#
+#.........#....#
+#.........#....#
+#..............#
+#.........#....#
+#.........#....#
+#..............#
+################
+
+# z=6 — second-floor space.
+################
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+################
+
+# z=7 — second-floor space.
+################
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+################
+
+# z=8 — ceiling slab.
+^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+
+# z=9 — above-ceiling fill (kept solid so nothing renders above the room).
+################
+################
+################
+################
+################
+################
+################
+################
+
+# z=10
+################
+################
+################
+################
+################
+################
+################
+################
+
+# z=11
+################
+################
+################
+################
+################
+################
+################
+################
+
+# z=12
+################
+################
+################
+################
+################
+################
+################
+################
+
+# Staircase geometry — ramp shapes for the 4 treads.
+# straight_staircase(base=(3,3,0), dir=PosX, storey_height=4).
+shapes =
+4 3 1 rampz posx
+5 3 2 rampz posx
+6 3 3 rampz posx
+7 3 4 rampz posx
+
+# ── The L1 puzzle (canon graph) ───────────────────────────────────────────────
+# Ground floor: input neuron R (the first pulse), fixed to 1 by [inputs].
+[node R]
+pos          = 2,5,2
+glyph        = R
+pool         = FIRE BLOOD ANGER ALARM PASSION ROSE FLAME DAWN BRICK STOP
+pool_alt     = огонь кровь пламя гнев 火 紅 fuego sangre feu Feuer
+color        = #FF4040
+is_input     = yes
+
+# Second floor: the output node — the model. Fires when R's pulse reaches it.
+[node output]
+pos          = 13,4,6
+glyph        = O
+pool         = OUTPUT MODEL LIGHT
+pool_alt     = выход モデル salida sortie
+color        = #FFFFFF
+is_output    = yes
+threshold    = 1
+
+# The single pipe R→output, with ONE switch the player walks to on the GROUND
+# floor at (5,5,2). It runs from R up the stairwell to the output on floor 2.
+# Starts OFF: the player must flip it ON to carry the pulse to the door.
+#
+# THE TAIL APPROACHES `output` FROM +x (real-world) 2026-08-07. It used to climb into the
+# alcove at x=13 — (13,3,5) then (13,4,5) then up onto the node — which put two
+# path cells INSIDE the `[pedestal]` box at (13,4,5) vol 2×2×2. A pipe path cell is
+# RESERVED (`emit_parts` will not stamp a reward onto the wiring), so `red_block`
+# bound 5 of its 8 cells and the "solid red light-block in its alcove" shipped as a
+# broken shell. The wire now runs the slab east to the far wall at x=14, climbs the
+# alcove's east side clear of the block, and comes in over the door onto the node
+# from the +x side — which also reads better: the pulse arrives from the door end.
+# `switch_at` is unchanged; the ground-floor half of the path is untouched, so the
+# painted `/` run at z=2 and the spawn view are exactly as before.
+#
+# `red_block` now binds 7 of 8. The eighth, (13,4,6), is the `output` NODE cell
+# itself — the block is authored as the node's housing, wrapping it — and a part
+# never replaces an `Object`. That is a different situation from a cell under a
+# pipe: the node is the thing the reward is celebrating, not wiring in the way.
+# Guarded by `re_lvlcheck`'s `emit_parts` rule (which reports the node cell as a
+# WARN, never a FAIL).
+[pipe R->output]
+state        = OFF
+path         = (2,5,2) (5,5,2) (5,3,2) (8,3,4) (14,3,4) (14,3,6) (14,4,6) (13,4,6)
+switch_at    = (5,5,2)
+density      = 0.7
+
+# When the output fires, it emits a solid red light-block in its alcove.
+[part red_block]
+size         = 2 2 2
+mask         =
+##
+##
+
+##
+##
+color        = #FF4040
+offset       = 0 0 0
+
+[emit output=1]
+parts        = red_block
+
+[inputs]
+R            = 1
+
+# Pedestal under the output node on floor 2 (visual anchor of the upper alcove).
+[pedestal]
+center       = 13 4 5
+volume       = 2 2 2
+
+# The EXIT DOOR — on the SECOND floor at the far +x end of the output alcove.
+# Win = output fires (puzzle solved) AND the camera reaches this door cell.
+[door]
+pos          = 14 4 5
+target_parts = output
+# SOUND FIELD: F8 exit_detune, the
+# grammar anchor — "in tune = open" — taught here first. Implied drive =
+# door_ready (§4.1 host table); no explicit knobs needed.
+field        = exit_detune
+
+# ── Lore plaques (canon L1 voice; CONTENT_PACK_L1-L12_DRAFT §L1) ───────────────
+# Ground floor, beside the switch: the researcher's first-light log.
+[note researcher pos=4,6,2 facing=-y]
+    First light through R-pipe today. Hoffmann says don't anthropomorphize
+    but it *blinked*. Made tea. M. laughed.
+
+# Ground floor, on the stair-corridor wall: cold-start boot log.
+[note system_log pos=3,2,2 facing=+y]
+    > [boot.07] cold-start nominal. layer_00 ready. operator handle:
+    > aleks_v. session 0001 of N.
+
+# Second floor, beside the output node: the model's first memory + the readout
+# the solve surfaces (FIRE → MODEL) and the canon neuron-voice line.
+[note model_thought pos=12,5,5 facing=+x]
+    (red. red is the one that came first. I remember red before I
+    remembered remembering.)
+    readout: FIRE -> MODEL
+    -- red. before me, red --
+
+# ── SET DRESSING (L1) ────────────────────────────────────────────────────────
+# Meaning: YOUR FIRST ACTION LIGHTS THE BUILDING. Every powered prop below binds to
+# the one pipe R->output, so flipping the switch at (5,5,2) lights the rack row, the
+# desk CRT, the floor cable and the shaft drop in the pipe's own red (§3.6 colour
+# law). No puzzle cell is touched; props stamp into Empty air only.
+
+# Lit-slot materials for the powered props. The kit's default lit slot (a `monitor`
+# screen over a 12 % backing) reads as a DARKER plate than this room's lamp-lit brick,
+# so the payoff was invisible. Same hues as their sources (§3.6 colour law): the pulse
+# is node R's red, the alcove answers in the output node's white.
+[material pulse_lit]
+preset      = neon
+fg          = #FF4040
+bg          = #C02424
+
+# Round 2: the engine cuts every lit rack blade into LED rows (`__prop_led_<hue>`,
+# scanline freq=14 over a 14 % backing). At this room's cell scale those 14 thin bands
+# averaged into a dim dark-red plate — the same value as the brick beside it. Authoring
+# the synthesized name overrides it (re_level `Mats`: an authored name wins): fewer,
+# fatter rows in the same red (§3.6) over a black backing: bright bars with dark gaps,
+# which the lamp-lit brick never is.
+# Round 3 (design pass, fix 10 — "the loudest ON element at spawn is still the flat
+# red CRT slab", "I cannot confirm the rack fix"): from the spawn and from the walk to
+# the switch the rows still read as thin red hairlines on a dark plate. Fatter, brighter
+# bars over a deep-red glow (the old black backing fogged to the room's purple), so each
+# blade is a lit ladder at either distance.
+[material __prop_led_ff4040]
+preset      = neon
+fg          = #FFC0B0
+bg          = #4A0808
+recipe      = scanline freq=2 duty=0.6 warp=0 axis=0
+
+# Round 3: the desk CRT stays the pulse's red but drops to a screen (monitor over a dark
+# backing), so the racks — the machines the pulse actually runs through — out-shine it.
+[material crt_lit]
+preset      = monitor
+fg          = #FF4040
+bg          = #3A0C0C
+
+[material first_light]
+preset      = neon
+fg          = #FFFFFF
+bg          = #A8B0C0
+
+# MID — recessed racks against the partition (bodies x=9, blade slots x=8 at
+# head height). Dark until the pulse flows; then each blade slot fills with red LED rows.
+# Round 2: the three racks abutted (y=5,6,7), so when lit the three blades fused into one
+# flat red slab that still read as a patch of the red brick wall. Two units with a dark
+# bay between them (y=5 and y=7) read as separate machines at any distance; the third
+# unit sits alone at the north end of the partition (y=1).
+[prop rack_a]
+kind     = rack
+mat.body = metal
+mat.lit  = pulse_lit
+at       = 8 5 1
+facing   = -x
+size     = 1 2 2
+power    = pipe:R->output
+
+[prop rack_b]
+kind     = rack
+mat.body = metal
+mat.lit  = pulse_lit
+at       = 8 1 1
+facing   = -x
+size     = 1 2 2
+power    = pipe:R->output
+
+[prop rack_c]
+kind     = rack
+mat.body = metal
+mat.lit  = pulse_lit
+at       = 8 7 1
+facing   = -x
+size     = 1 2 2
+power    = pipe:R->output
+
+# FG — the operator desk BESIDE the switch, its front facing the switch's stand cell
+# (kit rule #3). Its CRT wakes with the pulse.
+[prop op_desk]
+kind     = console
+mat.body = metal
+mat.lit  = crt_lit
+at       = 6 5 1
+facing   = -x
+size     = 2 2 1
+monitor  = yes
+power    = pipe:R->output
+
+# Round 3 (design pass, fix 2 — signs of people): the operator's chair, pushed
+# back from the desk toward the switch, as a SOLID knee-high seat (`solid = yes`) with
+# its back in strokes — pale cyan, a hue the red room does not use anywhere — and a
+# short pale runner on the floor from the spawn corner to it (the L7 pier recipe). The
+# chair collides: it takes (5,6,1), one of the cells beside the switch column; the
+# switch is still worked from (4,5)/(5,4) and the walk to the stair goes round it.
+[material op_chair_ink]
+fg          = #A8E8F0
+bg          = #102428
+
+[prop op_chair]
+kind     = furniture_trace
+shape    = chair
+at       = 5.15 6.15 1
+facing   = +x
+size     = 0.7 0.7
+solid    = yes
+mat.ink  = op_chair_ink
+
+[prop op_runner]
+kind     = furniture_trace
+shape    = pier
+at       = 2.2 6.25 1
+facing   = -x
+size     = 0.5 2.6
+mat.ink  = op_chair_ink
+
+# Left wall — reagent shelving along the stair corridor.
+[prop reagents]
+kind     = shelving
+mat.trim = metal
+mat.body = metal
+at       = 5 1 1
+facing   = +y
+size     = 4 1 2
+
+# Real surfaces for the two floating ground-floor placards. Both stand with their
+# BACK to a perimeter wall: the note binder paints its dark placard backing over the
+# whole host board (every face, not just the front), so a free-standing board reads
+# as a black slab from behind or from the side. They hang side by side on the
+# stair-corridor wall, next to the reagent shelving: read on the way to the stair.
+[prop board_log]
+kind     = notice_board
+mat.body = wood
+at       = 3 1 1
+facing   = +y
+note     = system_log
+
+[prop board_res]
+kind     = notice_board
+mat.body = wood
+at       = 4 1 1
+facing   = +y
+note     = researcher
+
+# The red pulse-lamp hangs from the slab on a cord.
+[prop red_cord]
+kind     = lamp_pendant
+at       = 2.5 5.5 3.3
+light    = existing
+
+# The floor cable: switch -> stair, lit with the pipe.
+[prop pulse_cable]
+kind     = cable_run
+follow   = pipe:R->output
+
+# Vertical continuity through the stair shaft.
+[prop shaft_drop]
+kind     = cable_drop
+at       = 5.5 3.5 7.9
+to       = 5.5 3.5 4.1
+strands  = 2
+power    = pipe:R->output
+
+# Upstairs: a rail round the stair opening.
+[prop shaft_rail]
+kind     = furniture_trace
+shape    = rail
+at       = 3.9 2.9 5
+size     = 4.2 1.2
+
+# Upstairs: console rows replace the two `O` benches (F2: an `O` renders as a node;
+# since the vertical renderer they drew as plain wall). Steel-blue lattice faces so
+# they separate from the red brick (§5 R2); a chair traced in front of each row.
+[prop desks_n]
+kind     = console
+mat.face = lattice
+mat.body = metal
+at       = 2 1 5
+facing   = +y
+size     = 5 1 1
+chair    = yes
+
+[prop desks_s]
+kind     = console
+mat.face = lattice
+mat.body = metal
+at       = 6 7 5
+facing   = -y
+size     = 5 1 1
+chair    = yes
+
+# The output alcove racks: lit only when the model answers.
+[prop out_rack_n]
+kind     = rack
+mat.body = metal
+mat.lit  = first_light
+at       = 11 2 5
+facing   = +y
+size     = 1 2 2
+power    = node:output
+
+[prop out_rack_s]
+kind     = rack
+mat.body = metal
+mat.lit  = first_light
+at       = 11 6 5
+facing   = -y
+size     = 1 2 2
+power    = node:output
+
+[prop pale_cord]
+kind     = lamp_pendant
+at       = 12.5 4.5 7.4
+light    = existing
+
+[player]
+# Spawn on the GROUND floor, south-west corner, looking north-east so the room and
+# the staircase mouth read ahead. The switch at (5,5,2) is a few steps away.
+# SET DRESSING: moved from (2,5,1) facing +x. That cell sits directly
+# UNDER node R (2,5,2): since the renderer draws every height level, frame 1 was the
+# node's lettered underside filling the whole upper view. From the south-west corner
+# at yaw 145 (between +x and -y) the z=2 network reads as one framed plate over the
+# switch, the rack row and desk hold the middle, and the stair mouth sits at the
+# right edge. Puzzle, switch and door are untouched; the switch is a short walk
+# north-east.
+spawn        = 1 7 1
+facing       = 145

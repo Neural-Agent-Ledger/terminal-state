@@ -1,0 +1,691 @@
+# TERMINAL STATE — levels/L11-inner-circuit.lvl
+#
+# L11 · "Inner Circuit" — REBUILT to the 2026-09-23 (real-world) owner-approved redesign
+# (the spatial redesign §3 L11 + the puzzle-graph redesign
+# L11). "NCP-A-04 was never a classifier. It was a lock. We taught it to remember
+# who comes in." (K.H.) The net does not resolve to one answer; it must be driven
+# through THREE ordered output states — BREAK -> FALL -> DARK — in order.
+#
+# ── SPACE (NEW) — the rack vault ─────────────────────────────────────────────────
+# 24x17x7. You arrive BEHIND the one powered rack of NCP-A-04 (a solid block,
+# x=16..18, y=3..13, full height) — a green monolith of its own source code
+# standing among dead cabinets in the fog (x=20..22, along y=1 and y=15). Walk
+# around either end to the front (west face): the six switches and the three
+# lamps on the rack face are in one view, as the ▓█ peak requires. The door is
+# behind the switch field, to the WEST.
+#
+# ── MECHANIC (T6 sequence-lock; re_puzzle SequenceLock / [sequence] section) ──
+# Three seq-inputs (s1,s2,s3 = 1) feed a small switchable net whose readout is a
+# 3-bit output WINDOW (o1,o2,o3). The lock observes {o1,o2,o3} and demands three
+# DISTINCT output states, IN ORDER:
+#
+#     P1  BREAK : o1 ON , o2 OFF, o3 OFF
+#     P2  FALL  : o1 OFF, o2 ON , o3 OFF
+#     P3  DARK  : o1 OFF, o2 OFF, o3 ON
+#
+# Each forward pass, if the CURRENT (not-yet-locked) pattern matches, that step
+# LOCKS and progress advances. Locks are MONOTONE. Win when all three are locked.
+#
+# ── REBUILT GRAPH (the puzzle-graph redesign L11 §1-2) ──────────────
+# The SHIPPED graph had a defect: `s2->o3` bypassed `circuit` entirely, so the
+# node the level is NAMED AFTER never had to matter (stateless minimum was 1).
+# Rebuilt so `circuit` (now T2, needing s1 AND s2) is load-bearing for steps 2
+# and 3:
+#
+#     s1 ─┬─► o1 (T1)                                  <- BREAK bit (pipe A)
+#         └─► circuit (T2) ◄─ s2 (pipe C)              <- s1+s2 both required
+#     s2 ─┬─► o2 (T2, + circuit)                       <- FALL bit (pipes D, E)
+#     s3 ─┬─► o3 (T2, + circuit)                       <- DARK bit (pipes G, F)
+#
+# Seven switchable pipes, ALL start OFF:
+#   A s1->o1   B s1->circuit   C s2->circuit   D s2->o2
+#   E circuit->o2   F circuit->o3   G s3->o3
+#
+# power_budget = 4 (was 2; TRUE minimum, was previously 1 because of the removed
+# bypass). Each step's wiring draws the full 4-unit cap, so the STALE WIRES from
+# the previous step must be cleared before the next step can be driven — that is
+# the attention strain PROGRESSION wants for the peak.
+#
+# ── THE 3-STEP SOLVE (stateful; drive the lock P1->P2->P3) ──
+#   P1 BREAK: ON {A}                          -> o1=1,o2=0,o3=0        locks P1
+#   P2 FALL : OFF A; ON {B,C,D,E} (4/4)        -> circuit=2,o2=D+E=2   locks P2
+#   P3 DARK : OFF D,E; ON {F,G} (kept B,C)     -> circuit=2,o3=F+G=2   locks P3 = WON
+# Stateful minimum: 10 toggles. Stateless (door-target-only) minimum: 4
+# ({B,C,F,G}). Decoy pressure: `D` alone or `G` alone never reaches T2 — the
+# circuit's s1+s2 feed is never optional.
+#
+# door_target = o3 (the final pattern's lit bit): re_lvlcheck verifies the FINAL
+# output state is reachable (SOLVABLE-by-final-state; the ordered drive is
+# covered by re_puzzle unit tests, not by lvlcheck's stateless solver).
+#
+# ── MOOD: the rack vault — emissive only, no lamps ───────────────────────────────
+# decay lives on ONE dead cabinet (a specific casualty, not a wall-wide effect),
+# a watcher lattice on the north wall (it has been looking), a thin matrix
+# shimmer, and the rack's own cold breath rising off its top. The rack and the
+# three lock beacons are the ONLY light in the room — P4's "emissive-only"
+# movement identity (the spatial redesign §2).
+#
+# Verify:
+#   cargo run -p re_game --release -- --dump levels/L11-inner-circuit.lvl --ansi
+#   (re_lvlcheck::check_level -> COHERENT / SOLVABLE-by-final-state, min=4)
+
+[meta]
+name        = level-11-inner-circuit
+title       = Inner Circuit
+version     = 2
+spec_rev    = 2026-09-23
+prop_style  = archive
+
+[room]
+size        = 24 17 7
+ambient     = solid
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05; RAISED 2026-09-23 per
+# the puzzle-graph redesign L11). THIS LEVEL: 4 of 7 pipes — the true
+# stateless minimum now that the `circuit` bypass is removed. Every step of the
+# sequence draws the full cap, so the previous step's wires must be released
+# before the next step can be driven.
+power_budget = 4
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# ── Surfaces: the rack vault ──────────────────────────────────────────────────
+# Cool circuit seams, dimmed — D1 FIX: ambient = solid means this now actually
+# paints the perimeter, the rack block and the cabinets (all overridden below by
+# [zone]s where they need a distinct look).
+[material rack_wall]
+fg          = #2A3A40
+bg          = #02100F
+recipe      = circuit scale=1.7 trace_w=0.11
+surface     = wall_solid
+
+# THE RACK'S OWN SOURCE, phosphor green on black, self-lit (codewall ignores
+# lamps and light — fitting, since this room has none). Bound via [zone] to the
+# rack block's WEST face only (16, y=3..13) — the face the switch field looks at.
+# Round-2 dressing: panel 0 showed our own engine's Rust doc comments (critic: "reads
+# as an accident"); panel 4 is in-fiction NAL text, so the monolith speaks the lab.
+[material rack_code]
+recipe      = codewall panel=4
+fg          = #45D962
+bg          = #03060A
+
+# Dead cabinets — plain void (empty, receded).
+[material cabinet_void]
+preset      = void
+
+# ONE dead cabinet carries visible bit-rot — a specific casualty among the row,
+# not a wall-wide effect.
+[material cabinet_decay]
+preset      = decay
+
+# The WATCHER wall — a world-fixed eye/face lattice that brightens on approach.
+# It has been looking the whole time. Re-kinded onto the north wall via the
+# [wall_decal] below (previously authored but never placed — the spatial redesign D1).
+[material watch_wall]
+preset      = watcher
+surface     = wall_trace
+
+# Dark steel floor.
+[material cold_floor]
+fg          = #4A555F
+bg          = #050A0E
+recipe      = grain scale=3.2 speck=0.09
+surface     = floor
+
+# Near-black ceiling grain (frost DROPPED — the spatial redesign D8).
+[material dim_roof]
+fg          = #1C222A
+bg          = #020304
+recipe      = grain scale=3.4 speck=0.07
+surface     = ceiling
+
+# The rack's own source, shown on the face the player actually wires against.
+[zone rack_face]
+region      = (16,3,1)-(16,13,5)
+material    = rack_code
+scale       = none
+
+# The watcher lattice, across the north wall.
+[wall_decal watcher_north]
+surface     = trace
+region      = (2,0,1)-(21,0,4)
+
+# The dead cabinets — five plain void, one decayed.
+[zone cabinet_n1]
+region      = (20,1,1)-(20,1,4)
+material    = cabinet_void
+scale       = none
+
+[zone cabinet_n2]
+region      = (21,1,1)-(21,1,4)
+material    = cabinet_void
+scale       = none
+
+[zone cabinet_n3]
+region      = (22,1,1)-(22,1,4)
+material    = cabinet_void
+scale       = none
+
+[zone cabinet_s1]
+region      = (20,15,1)-(20,15,4)
+material    = cabinet_void
+scale       = none
+
+[zone cabinet_s2_dead]
+region      = (21,15,1)-(21,15,4)
+material    = cabinet_decay
+scale       = none
+
+[zone cabinet_s3]
+region      = (22,15,1)-(22,15,4)
+material    = cabinet_void
+scale       = none
+
+# ── Near-total fog + matrix-rain air ─────────────────────────────────────────
+[palette]
+fog_color   = #060A10
+fog_near    = 2.0
+fog_far     = 11.0
+
+[atmosphere]
+ambient     = 0.05
+postfx      = crt          # P4 THE ARCHIVE movement postfx, owner-approved 2026-09-23 (real-world)
+
+[effects]
+matrix      = 0.22
+snow        = off
+
+# A slow cold drift rising off the RACK TOP — the room's patient breath.
+[emitter rack_chill]
+origin_world    = 17.0 8.0 5.0
+colors          = 0x2A5A66 0x14323A 0x05131A
+color_mode      = RampOverAge
+family          = growth_dot
+bold            = ByAge
+direction       = 0.0 0.0 1.0
+spread_deg      = 40.0
+size            = 0.9
+growth          = 1.1
+rate            = 9.0
+speed           = 0.4
+speed_spread    = 0.15
+path_jitter     = 0.06
+lifetime        = 3.4
+lifetime_spread = 0.5
+accel           = 0.0 0.0 0.08
+max_particles   = 192
+seed            = 711
+
+# ── Dense [cells] grid ────────────────────────────────────────────────────────
+# 24 cols (x=0..23) x 17 rows (y=0..16) x 7 z-layers (z=0..6). z=0 floor slab;
+# z=1..6 walking / node-pipe / service / upper wall courses. The RACK
+# (x=16..18, y=3..13) is solid z=1..5. Dead cabinets (x=20..22, y=1 and y=15)
+# are solid z=1..4, shorter than the rack.
+#
+# Pipe cells at z=2 (and z=3 for pipe B's overhead bridge) are painted as
+# WallTrace so the network renders, per the spatial redesign invariant 1 + risk 1.
+[cells]
+size        = 24 17 7
+
+# z=0 — floor slab.
+########################
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+#______________________#
+########################
+
+# z=1 — walking layer. Rack + cabinets begin.
+########################
+#...................####
+#......................#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#......................#
+#...................####
+########################
+
+# z=2 — node/pipe plane. s1(2,4) s2(2,8) s3(2,12) circuit(8,10) o1(15,4) o2(15,8)
+# o3(15,12). Pipes A,C,D,E,F,G painted the whole way; pipe B's short z=2 legs at
+# its endpoints only (the bulk of B climbs to z=3, below).
+########################
+#...................####
+#......................#
+#...............###....#
+#.//////////////###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#.//////////////###....#
+#./.....////////###....#
+#.///////.......###....#
+#.......////////###....#
+#.//////////////###....#
+#...............###....#
+#......................#
+#...................####
+########################
+
+# z=3 — service (jump-reach) plane. Pipe B bridges overhead here: a vertical run
+# at x=4 (y=4..10) then a horizontal run at y=10 (x=4..8), clear of every z=2 run.
+########################
+#...................####
+#......................#
+#...............###....#
+#.../...........###....#
+#.../...........###....#
+#.../...........###....#
+#.../...........###....#
+#.../...........###....#
+#.../...........###....#
+#.../////.......###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#......................#
+#...................####
+########################
+
+# z=4 — upper wall course. Rack + cabinets continue.
+########################
+#...................####
+#......................#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#......................#
+#...................####
+########################
+
+# z=5 — upper wall course. Rack continues; cabinets stop at z=4.
+########################
+#......................#
+#......................#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#...............###....#
+#......................#
+#......................#
+########################
+
+# z=6 — uppermost wall course. Open above the rack — the room's height beyond
+# the monolith.
+########################
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+########################
+
+# ── Notes (the revelation + the lock log) ────────────────────────────────────
+# K.H.'s revelation: the rack's WEST face, above the readout — read AFTER the
+# solve as you head to the door (the 3-5s silence rule; it does not compete
+# with the grind).
+[note researcher pos=16,6,3 facing=-x]
+    NCP-A-04 was never a classifier. It was a lock. We taught it to remember who
+    comes in. Three states, in order — it will not open until it has watched you
+    arrive the way you always arrive. I am the only one who knows that now. — K.H.
+
+# BRIDGE B5 (spec §A3.2) — line 2 is the ADDRESS. The lock does not merely hold
+# your face, it knows the shelf: a lowercase `sector`, a 16-bit address as four
+# uppercase hex digits, a spaced middle dot before the subject and an em dash
+# before the detail clause. `0x0A04` is the asset's own designation, NCP-A-04,
+# read as an address — ours, not borrowed. A newcomer reads a machine citing a
+# storage location it will not let them open.
+[note system_log pos=16,10,3 facing=-x]
+    > sequence-lock armed. door_target = operator_face_current_session.
+    > sector 0x0A04 · operator_face_current_session — held, not readable by you
+    > pattern order: BREAK, FALL, DARK. partial match resets current step only.
+    > server rack clock: 2052-03-14. session clock: 2071-06-17. discrepancy held.
+
+# STEWARDSHIP CORPUS #10 — REAPING DEFERRAL (NORMATIVE_NOTES §10, [where] L9/L11),
+# abridged to the placard grid. Placed HERE, at the lock: the SIGKILL was issued at
+# the moment of death and has been pending for nineteen years, because the signal
+# cannot land while the process holds an unfinished thought. The lock and the reaper
+# are the same fact told from two sides.
+#
+# PLACEMENT: the east wall at (23,8,2), `facing = -x` — behind the spawn (21,8,1),
+# the first thing behind you.
+#
+# TOKENS: `{sys_uptime}` only — Tier-1 allowlisted and a DECLARED read with an A-7 §8
+# fallback, so the line resolves in both opt states (real uptime where readable,
+# `unknown` otherwise) and never drops.
+[note system_log pos=23,8,2 facing=-x]
+    > REAPING DEFERRAL - pid aleks_v
+    > a SIGKILL was issued at time of death. delivery: pending (19 yr).
+    > the signal cannot land while the process holds an unfinished thought.
+    > the process is finishing the thought. it has been finishing the thought
+    >   for some time.
+    > reaper status: waiting. patiently. it is patient.
+    > (see uptime: {sys_uptime}.)
+
+# ── Seq-inputs (all = 1): the three moments, in order ────────────────────────
+[node s1]
+pos          = 2,4,2
+glyph        = 1
+pool         = BREAK SNAP GIVE CRACK PART
+pool_alt     = надлом 折 quiebre rupture
+color        = #7FE0D0
+is_input     = yes
+
+[node s2]
+pos          = 2,8,2
+glyph        = 2
+pool         = FALL DROP TILT SLIP SINK
+pool_alt     = падение 落 caída chute 추락
+color        = #7FD0E0
+is_input     = yes
+
+[node s3]
+pos          = 2,12,2
+glyph        = 3
+pool         = DARK CLOSE DIM LAST QUIET
+pool_alt     = темно 暗 oscuro sombre 어둠
+color        = #6FB8D8
+is_input     = yes
+
+# ── The ORDER node (hidden): now genuinely load-bearing (T2 = s1 AND s2) ─────
+[node circuit]
+pos          = 8,10,2
+glyph        = C
+pool         = ORDER CHAIN PATH TRACE
+pool_alt     = порядок 順 orden ordre
+color        = #A0C8D8
+threshold    = 2
+
+# ── The 3-bit output readout WINDOW (o1,o2,o3) — the lock observes these ─────
+[node o1]
+pos          = 15,4,2
+glyph        = O
+pool         = BREAK OUTPUT MODEL PASS
+color        = #FF6F6F
+is_output    = yes
+threshold    = 1
+
+[node o2]
+pos          = 15,8,2
+glyph        = O
+pool         = FALL OUTPUT MODEL PASS
+color        = #FFC86F
+is_output    = yes
+threshold    = 2
+
+[node o3]
+pos          = 15,12,2
+glyph        = O
+pool         = DARK OUTPUT MODEL PASS
+color        = #7FD0FF
+is_output    = yes
+threshold    = 2
+
+# ── Pipes (all OFF at load) — seven switches ─────────────────────────────────
+# A: s1 -> o1   (the BREAK bit, unchanged)
+[pipe s1->o1]
+state        = OFF
+path         = (2,4,2) (15,4,2)
+switch_at    = (6,4,2)
+density      = 0.7
+color        = #FF6F6F
+
+# B: s1 -> circuit   (bridges overhead at z=3 so it never crosses D's y=8 run)
+[pipe s1->circuit]
+state        = OFF
+path         = (2,4,2) (4,4,2) (4,4,3) (4,10,3) (8,10,3) (8,10,2)
+switch_at    = (4,6,3)
+density      = 0.7
+color        = #6FB8D8
+
+# C: s2 -> circuit
+[pipe s2->circuit]
+state        = OFF
+path         = (2,8,2) (2,10,2) (8,10,2)
+switch_at    = (5,10,2)
+density      = 0.7
+color        = #7FD0E0
+
+# D: s2 -> o2   (the FALL bit's direct feed)
+[pipe s2->o2]
+state        = OFF
+path         = (2,8,2) (15,8,2)
+switch_at    = (7,8,2)
+density      = 0.7
+color        = #FFC86F
+
+# E: circuit -> o2   (the FALL bit's second feed — circuit is now required)
+[pipe circuit->o2]
+state        = OFF
+path         = (8,10,2) (8,9,2) (15,9,2) (15,8,2)
+switch_at    = (12,9,2)
+density      = 0.7
+color        = #A0C8D8
+
+# F: circuit -> o3   (the DARK bit's first feed)
+[pipe circuit->o3]
+state        = OFF
+path         = (8,10,2) (8,11,2) (15,11,2) (15,12,2)
+switch_at    = (12,11,2)
+density      = 0.7
+color        = #A0C8D8
+
+# G: s3 -> o3   (the DARK bit's direct feed)
+[pipe s3->o3]
+state        = OFF
+path         = (2,12,2) (15,12,2)
+switch_at    = (6,12,2)
+density      = 0.7
+color        = #7FD0FF
+
+# ── The lock readout beacons: three distinct columns on a 1x3 pedestal ───────
+[part beacon1]
+size         = 1 1 2
+mask         =
+#
+
+#
+color        = #FF8F8F
+offset       = 0 0 0
+
+[part beacon2]
+size         = 1 1 2
+mask         =
+#
+
+#
+color        = #FFD89F
+offset       = 0 1 0
+
+[part beacon3]
+size         = 1 1 2
+mask         =
+#
+
+#
+color        = #9FD8FF
+offset       = 0 2 0
+
+[emit o1=1]
+parts        = beacon1
+
+[emit o2=1]
+parts        = beacon2
+
+[emit o3=1]
+parts        = beacon3
+
+[inputs]
+s1           = 1
+s2           = 1
+s3           = 1
+
+# ── The SEQUENCE-LOCK: observe the 3-bit window, drive it BREAK->FALL->DARK ─────
+[sequence]
+observe      = o1 o2 o3
+step         = o1
+step         = o2
+step         = o3
+
+# The pedestal: 1 wide x 3 deep x 2 tall, clear of pipes A (y=4), D (y=8), E (y=9).
+[pedestal]
+center       = 14 6 1
+volume       = 1 3 2
+
+[door]
+pos          = 0 8 1
+target_parts = o3
+
+# ── SET DRESSING (L11) ───────────────────────────────────────────────────────
+# Meaning: THE ONE POWERED RACK AMONG THE DEAD. You drive its three lamps in order and
+# watch the overhead trays carry the current. P4 is emissive-only: no lamps are added.
+# No puzzle cell is touched; props stamp into Empty air or re-skin plain geometry.
+
+# The monolith's EAST face (x=18, the face the spawn sees) in the rack's own source.
+# The west face already wears `rack_code` through [zone rack_face].
+[prop monolith_e]
+kind     = wall_panel
+mode     = skin
+at       = 18 13 1
+facing   = +x
+size     = 11 1 5
+mat.face = rack_code
+
+# Round 3 (design pass 2, fix 5/6 — `spawn_ON` = `spawn`, 0 cells): one sequence
+# lamp set at the foot of the code face, dead ahead of the spawn. It is the LAST step's
+# unit, o3, in o3's own blue (node power, §3.6): a dark bezel on the first frame, and it
+# fills only when the whole sequence has been observed. Knee height (z=1), under the
+# gantry's open edge. (Three lamps, one per unit, were tried: at 3.5 cells each lit
+# cell is a storey-tall neon block and the three hid half the monolith's text.)
+[material seq_o3_lit]
+preset      = neon
+fg          = #7FD0FF
+bg          = #3A7AA8
+
+[prop seq_lamp]
+kind     = wall_panel
+mode     = bank
+at       = 19 8 1
+facing   = +x
+size     = 1 1 1
+screen   = live
+mat.lit  = seq_o3_lit
+power    = node:o3
+
+# BG — a dead rack row along the east wall south of the gantry, dissolving into the
+# fog toward the decayed cabinet.
+[prop dead_row]
+kind     = rack_row
+at       = 22 12 1
+facing   = -x
+size     = 3 1 3
+style    = dead
+
+# The gantry: a catwalk deck at z=3 over the spawn (x20..22, y5..11), against the
+# east wall, reached by a 3-tread stair that lands at its north end. Its one open
+# edge (x=20) carries the rail and a line of posts: the colonnade between the spawn
+# and the code face. From the deck (eye 4.5) the code face is at eye level. The
+# deck is two cells under the rack top (z=5) and a cell clear of it, so it is no
+# ladder over the monolith. (`size` is W along the viewer's right (+y here) by D
+# into the prop (+x), so the §4 "size=3 7 1" is authored as 7 3 1.)
+[prop gantry]
+kind     = gallery
+at       = 20 5 3
+facing   = -x
+size     = 7 3 1
+stair    = 22 2 1 +y 3
+
+# Quiet iron for the trays: dark silhouettes against the open top, so the upper view
+# gains three converging beams instead of three more bands of texture over the
+# lettered network (the archive pack's `decay` trim read as noise here).
+[material tray_iron]
+fg          = #26303A
+bg          = #080C10
+recipe      = grain scale=4.0 speck=0.03
+
+# Upper half: three trays over the three seq-input runs. Each lights with the pipe
+# it follows, in that pipe's own colour (s1->o1 red, s2->o2 amber, s3->o3 blue;
+# §3.6 colour law). The doc's `power = seq:I` is not used: a seq: gate lights in the
+# pack hue (#45D962), which no puzzle element carries, so it breaks the colour law.
+[prop tray_1]
+kind     = cable_tray
+mat.trim = tray_iron
+follow   = pipe:s1->o1
+lift     = 2
+
+[prop tray_2]
+kind     = cable_tray
+mat.trim = tray_iron
+follow   = pipe:s2->o2
+lift     = 2
+
+[prop tray_3]
+kind     = cable_tray
+mat.trim = tray_iron
+follow   = pipe:s3->o3
+lift     = 2
+
+# The power budget made physical on the north wall, lit amber per unit drawn.
+[prop budget]
+kind     = budget_bank
+at       = 8 1 3
+facing   = +y
+size     = 2 1 1
+
+# Spawn BEHIND the rack, in the dead-cabinet fog, facing west: frame 1 is the
+# code monolith filling the centre, dead cabinets dissolving into the dark
+# either side. SET DRESSING: moved one cell east (21 -> 22, under the
+# gantry deck, against the east wall) and turned 15 degrees north of west (yaw
+# 345): square-on at 2.5 cells the code face was a flat wall filling the frame; at
+# this angle it recedes in perspective into the north aisle's fog, with the
+# gantry's post line framing the right edge. Walk around either end to the front (west face) for the
+# switch field, the three lamps and the door beyond.
+[player]
+spawn        = 22 8 1
+facing       = 345

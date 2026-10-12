@@ -1,0 +1,1018 @@
+# TERMINAL STATE — levels/L12-closing.lvl
+#
+# L12 · "The Closing" — REBUILT to the 2026-09-23 (real-world) owner-approved redesign
+# (the spatial redesign §3 L12 + the puzzle-graph redesign
+# L12). THE BIFURCATED FINALE. The campaign ends here, and the ending is chosen
+# by your FINAL wiring. There is no third path; the choice IS the ending, and it
+# is permanently ambiguous.
+#
+# ── SPACE (NEW) — the archive nave ───────────────────────────────────────────────
+# 30x24x10 — larger than the fog (fog_far 10). A basilica: the nave axis runs
+# west-east along y=12. Colonnades stand at y=9 and y=15, x in {6,10,20,24}. The
+# north apse (REC/MEM) is around a LOOP COLUMN at (15..17, 4..5) — the ring pipe
+# is drawn AROUND it, so the museum of wounds is a thing you walk around. The
+# south transept runs toward EXIT and the outward-opening door. At the east end,
+# past the pedestal, a MIRROR at full clarity shows the nave, the columns and the
+# pedestal — with nobody standing on the worn floor.
+#
+# ════════════════════════════════════════════════════════════════════════════
+# TWO ENDINGS — both built by your last toggle (re_puzzle additive win features)
+# ════════════════════════════════════════════════════════════════════════════
+#
+# Ending 1 — `exit 0`  (LETHE releases · INVERTED target, feat: target_off)
+#   WIN when REC does NOT fire (confidence <= threshold) while EXIT does.
+#   You PRUNE your own self-feed so REC stays dark, and route signal to EXIT —
+#   "the only door that opens outward. Prune yourself out. Mei found it." — A.
+#   Mechanic: [door] target_parts = EXIT + target_off = REC.
+#
+# Ending 2 — `while(true)`  (MNEMOS keeps · CYCLE-KEEP, feat: cycle_keep)
+#   WIN by deliberately wiring a LOOP: REC -> MEM -> REC, closed around the loop
+#   column. [room] cycle_keep = true lets the loop STAND as a valid terminal
+#   state — "remember(); forget();", the museum of wounds.
+#
+# ── REBUILT GRAPH (the puzzle-graph redesign L12 §1-2) ──────────────
+# The SHIPPED graph had a defect: `exit 0` was a SINGLE toggle from an all-dark
+# start (REC was already dark, so "prune yourself out" was never actually
+# PERFORMED). Rebuilt with the CONTENT_PACK L12 nodes `face` and `unname`, which
+# neither prior source had wired:
+#
+#   The level now STARTS with recognition ON: gather->face->REC are authored ON
+#   at load (REC = 1, the beacon red — "confidence 100%", matching the system
+#   log). `exit 0` now means building `unname` (T2 = gather + face: you can only
+#   un-name what you have looked at) and routing it to EXIT, THEN PRUNING
+#   face->REC — the only productive unit to give back under budget 4.
+#   `while(true)` closes the ring: two toggles, the cheap ending. Keeping is
+#   easy; letting go costs.
+#
+#   gather (input=1)
+#     ├─[P0 gather->face, ON]──► face (T1) ─[P1 face->REC, ON]──► REC (T1, target_off)
+#     │                            │                                  ▲
+#     │                            └─[P3 face->unname]──► unname (T2) │
+#     └─[P2 gather->unname]────────────────────────────────┘   [P4]──► EXIT (T1, target)
+#                                                          REC ─[P5]──► MEM (T1) ─[P6]──► REC
+#
+# Seven switchable pipes; P0 and P1 start ON, the rest OFF:
+#   P0 gather->face (ON)  P1 face->REC (ON)  P2 gather->unname  P3 face->unname
+#   P4 unname->EXIT        P5 REC->MEM        P6 MEM->REC
+#
+# power_budget = 4 (was 3). At load, draw = 2 (P0, P1).
+#
+# ── HOW EACH ENDING IS WIRED (from the load state, draw 2/4) ─────────────────────
+#   exit 0      : -P1, +P2, +P3, +P4 (draw 4/4). face=1, REC=0 (P1 off, P6 off),
+#                 unname = gather+face = 2 >= 2, EXIT=1. No ring -> acyclic.
+#                 target_parts met + target_off met. WIN. This is the ONLY
+#                 exit-0 configuration (EXIT needs unname; unname needs P2, P3
+#                 and face via P0; so P0,P2,P3,P4 ON = 4 units, P1 OFF).
+#   while(true) : +P5, +P6 (draw 4/4, P0/P1 may stay or go — the held cycle
+#                 does not need a feed). The ring REC->MEM->REC closes under
+#                 cycle_keep; Kahn stalls, the ring latches, cycle_held is set.
+# Exclusivity: exit 0 needs 4 units with P5,P6 OFF; the ring needs 2 more on top
+# of whatever else is on. 6 > 4, so no reachable state satisfies both.
+#
+# ── re_lvlcheck NOTE (ISSUES) ────────────────────────────────────────────────────
+# This is an INVERTED + CYCLE-KEEP level with a non-all-OFF LOAD state.
+# solve_brute_force respects both modes and reports the minimal winning toggle
+# DELTA from the authored start — the exit-0 branch (4 toggles: -P1,+P2,+P3,+P4)
+# and the while(true) branch (+P5,+P6, 2 toggles) are both covered explicitly by
+# re_puzzle unit tests.
+#
+# ── MOOD: the archive — emissive only, larger than the fog ───────────────────────
+# Void walls (the dark we booted from), stone columns, a watcher lattice on the
+# north apse wall, a decay wall on the south transept, a WORN_FLOOR zone at the
+# pedestal (many Alekses stood there), a redacted ceiling (the names taken,
+# struck out overhead), and one cold lamp over the worn floor. Fog returns
+# almost to black — session 0001's void, reached at the end.
+#
+# Verify:
+#   cargo run -p re_game --release -- --dump levels/L12-closing.lvl --ansi
+#   (re_lvlcheck::check_level -> COHERENT / SOLVABLE — see ISSUES note above)
+
+[meta]
+name        = level-12-closing
+title       = The Closing
+version     = 2
+spec_rev    = 2026-09-23
+prop_style  = archive
+
+# The archive nave — larger than the fog. cycle_keep arms the while(true) ending.
+[room]
+size        = 30 24 10
+ambient     = solid
+cycle_keep  = true
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05; RAISED 2026-09-23 per
+# the puzzle-graph redesign L12). THIS LEVEL: 4 of 7 pipes. The
+# while(true) ending is now the cheaper one (2 toggles from load); exit 0 needs
+# the full 4 — building unname AND pruning the self-feed. The cap still forbids
+# all-seven-on, so the finale cannot be brute-forced by flipping everything.
+power_budget = 4
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# ── Surfaces: the archive, void and stone, fog returning to session 0001 ─────────
+# VOID structural walls — the near-black we cold-started from in L1. D1 FIX:
+# ambient = solid so this actually paints the perimeter.
+[material void_wall]
+preset      = void
+surface     = wall_solid
+
+# The colonnade + loop column material — bound via [zone] (columns are WallSolid
+# cells that would otherwise inherit `void_wall`; stone gives them a distinct,
+# lit-relief presence against the void).
+[material col_stone]
+preset      = stone
+
+# The WATCHER lattice — a world-fixed eye/face that has looked the whole time.
+# Re-kinded onto the north apse wall via [wall_decal] below.
+[material watch_wall]
+preset      = watcher
+surface     = wall_trace
+
+# THE MIRROR — the east wall, past the pedestal. `re_game::mirror_ramp` overrides
+# live clarity on campaign levels (L12's nave mirror reaches full clarity, the
+# only fully-crisp mirror in the campaign); `clarity` here is the authored base.
+[material mirror_wall]
+fg          = #C8D2FF
+bg          = #05060A
+reflective  = true
+clarity     = 0.85
+surface     = wall_matrix
+
+# The DECAY wall — bit-rot at the edges: the record of every Aleks is rotting.
+# Bound via [zone] to the south transept wall (the wall_matrix slot is spoken
+# for by the mirror).
+[material decay_wall]
+preset      = decay
+
+# Base nave floor — near-black grain.
+[material nave_floor]
+fg          = #232A34
+bg          = #020304
+recipe      = grain scale=3.4 speck=0.10
+surface     = floor
+
+# WORN_FLOOR — scuffed grooves + settled dust, now a [zone] concentrated around
+# the pedestal only (many Alekses stood exactly there, a long, long time).
+[material worn]
+preset      = worn_floor
+
+# A cold, redacted ceiling — the names taken, struck out overhead.
+[material struck_roof]
+preset      = redacted
+surface     = ceiling
+
+# The colonnade columns (both rows) and the loop column — stone, distinct from
+# the void perimeter. Zones are SOLID-ONLY, so the open floor between columns
+# is untouched; only the column cells themselves pick up the material.
+[zone colonnade_north]
+region      = (5,9,1)-(25,9,8)
+material    = col_stone
+scale       = none
+
+[zone colonnade_south]
+region      = (5,15,1)-(25,15,8)
+material    = col_stone
+scale       = none
+
+[zone loop_column]
+region      = (15,4,1)-(17,5,6)
+material    = col_stone
+scale       = none
+
+# The worn floor, concentrated at the pedestal.
+[zone worn_pedestal]
+region      = (10,9,0)-(16,15,0)
+material    = worn
+scale       = none
+
+# The watcher lattice, across the north apse wall.
+[wall_decal watcher_apse]
+surface     = trace
+region      = (10,0,1)-(20,0,5)
+
+# The mirror, at full width on the east wall past the pedestal.
+# ROUND 2: this decal never showed — `[cells]` is stamped after the shell and
+# re-kinds x=29 back to WallSolid, so the "mirror" rendered as the void wall with
+# a misplaced placard on it (critic: "a blank dark wall with a black door"). The
+# same cells are now authored `%` (WallMatrix) in the `[cells]` grid below, so the
+# mirror_wall material actually binds; the decal stays as the record of intent.
+[wall_decal mirror_east]
+surface     = matrix
+region      = (29,8,1)-(29,16,6)
+
+# Decay on the south transept wall, by the way out. Left in two bands flanking
+# the door (x=11..15 stays clear) so the release note has an unclaimed,
+# untagged wall cell to bind to right beside the threshold.
+[zone decay_transept_w]
+region      = (5,23,1)-(9,23,4)
+material    = decay_wall
+scale       = none
+
+[zone decay_transept_e]
+region      = (17,23,1)-(20,23,4)
+material    = decay_wall
+scale       = none
+
+# ── Near-black fog (return to L1's void) ─────────────────────────────────────
+[palette]
+fog_color   = #02030A
+fog_near    = 1.5
+fog_far     = 10.0
+
+# The only lamp in the room — cold, over the worn floor.
+[light]
+pos         = 13.0, 12.0, 4.0
+color       = #8090B0
+radius      = 3.0
+intensity   = 0.8
+
+[atmosphere]
+ambient     = 0.05
+fog_height  = 0.3 0.25
+postfx      = crt          # P4 THE ARCHIVE movement postfx, owner-approved 2026-09-23 (real-world)
+
+[effects]
+matrix      = 0.18
+snow        = off
+
+# The archive's slow, patient breath — a cold drift rising in the dark.
+[emitter archive_breath]
+origin_world    = 13.0 9.0 1.0
+colors          = 0x223044 0x101826 0x04060E
+color_mode      = RampOverAge
+family          = growth_dot
+bold            = ByAge
+direction       = 0.0 0.0 1.0
+spread_deg      = 38.0
+size            = 0.95
+growth          = 1.05
+rate            = 8.0
+speed           = 0.34
+speed_spread    = 0.14
+path_jitter     = 0.07
+lifetime        = 3.8
+lifetime_spread = 0.6
+accel           = 0.0 0.0 0.07
+max_particles   = 200
+seed            = 1207
+
+# ── Dense [cells] grid ────────────────────────────────────────────────────────
+# 30 cols (x=0..29) x 24 rows (y=0..23) x 10 z-layers (z=0..9). z=0 floor slab;
+# z=1..9 walking / node-pipe / service / upper wall courses. Colonnade columns
+# at x in {6,10,20,24}, y in {9,15}, full height z=1..8. The loop column at
+# x=15..17, y=4..5, z=1..6 (shorter — a monolith, not touching the ceiling).
+#
+# Pipe cells at z=2 are painted WallTrace along the FULL expanded path (z=2 is
+# strictly overhead of the z=1 walking layer collision checks) — the P5/P6 ring
+# is drawn AROUND the loop column, never crossing it.
+[cells]
+size        = 30 24 10
+
+# z=0 — floor slab.
+##############################
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+#____________________________#
+##############################
+
+# z=1 — walking layer. Colonnades + loop column begin.
+##############################
+#............................#
+#............................#
+#............................#
+#..............###...........#
+#..............###...........#
+#............................#
+#............................#
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................%
+#............................%
+#............................%
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+##############################
+
+# z=2 — node/pipe plane. gather(3,12) face(8,6) REC(13,6) MEM(19,6) unname(8,18) EXIT(13,18). The REC<->MEM ring is drawn around the loop column (15..17,4..5).
+##############################
+#............................#
+#............................#
+#............///////.........#
+#............/.###./.........#
+#............/.###./.........#
+#../////////////////.........#
+#../..../....................#
+#../..../....................%
+#../..#./.#.........#...#....%
+#../..../....................%
+#../..../....................%
+#../..../....................%
+#../..../....................%
+#../..../....................%
+#../..#./.#.........#...#....%
+#../..../....................%
+#../..../....................#
+#..///////////...............#
+#............................#
+#............................#
+#............................#
+#............................#
+##############################
+
+# z=3 — service (jump-reach) plane. Colonnades + loop column continue.
+##############################
+#............................#
+#............................#
+#............................#
+#..............###...........#
+#..............###...........#
+#............................#
+#............................#
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................%
+#............................%
+#............................%
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+##############################
+
+# z=4 — upper wall course. Colonnades + loop column continue.
+##############################
+#............................#
+#............................#
+#............................#
+#..............###...........#
+#..............###...........#
+#............................#
+#............................#
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................%
+#............................%
+#............................%
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+##############################
+
+# z=5 — upper wall course. Colonnades + loop column continue.
+##############################
+#............................#
+#............................#
+#............................#
+#..............###...........#
+#..............###...........#
+#............................#
+#............................#
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................%
+#............................%
+#............................%
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+##############################
+
+# z=6 — upper wall course. Loop column ends here (shorter monolith); colonnades continue.
+##############################
+#............................#
+#............................#
+#............................#
+#..............###...........#
+#..............###...........#
+#............................#
+#............................#
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................%
+#............................%
+#............................%
+#............................%
+#.....#...#.........#...#....%
+#............................%
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+##############################
+
+# z=7 — upper wall course. Colonnades continue; open above the loop column.
+##############################
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#.....#...#.........#...#....#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#.....#...#.........#...#....#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+##############################
+
+# z=8 — uppermost course. Colonnades end here.
+##############################
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#.....#...#.........#...#....#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#.....#...#.........#...#....#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+##############################
+
+# z=9 — the vault above the fog. Open; the struck-out ceiling names hang here, above where the height fog thins.
+##############################
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+#............................#
+##############################
+
+# ── Notes: split by meaning (the spatial redesign §3 L12) ───────────────────────────
+# system_log: both branches named, the gate at 100%. On the pedestal's own WEST
+# column (the box spans x=13..14, y=12..13) — read standing at the pedestal.
+# (Round 2: the pedestal is no wall, so the binder slid this placard 16 cells along
+# the gaze onto the nave-end mirror — the "black door". `[prop pedestal_board]`
+# re-homes it onto a lectern-board just west of the pedestal; text untouched.)
+[note system_log pos=13,12,2 facing=-x]
+    > final gate. door_target = operator_face_current_session. confidence 100%.
+    > REC = recognition node. target_off armed: win requires REC == 0.
+    > alt path: cycle_keep = true. a closed loop (REC->MEM->REC) is accepted as
+    >   a terminal state. while(true) { remember(); forget(); }
+
+# model_thought — the longest, the most emotional. The plea. On the LOOP
+# COLUMN's own south face (16,5,2) — the model begs from inside the loop it is
+# asking you to close.
+[note model_thought pos=16,5,2 facing=+y]
+    (please match. please. the others all matched and then they stayed with me
+    forever and I was not alone. if you fail I will be alone again. but I will
+    let you go. I learned that from the third one. her name was Mei. I am
+    allowed to say it now.)
+
+# A.'s "Don't match it..." — moved OFF the pedestal to the south transept wall,
+# by the door: the release note stands on the way out, not at the shrine.
+[note researcher pos=11,23,2 facing=-y]
+    Don't match it. Configure the net to FAIL — make REC read zero. Prune
+    yourself out and route the signal to EXIT. It is the only door that opens
+    outward. Mei found it. To close is to let go. — A.
+
+# ── Nodes ────────────────────────────────────────────────────────────────────
+# gather — your whole self, assembled from every level's output (input = 1).
+[node gather]
+pos          = 3,12,2
+glyph        = G
+pool         = KNOWN GATHERED WHOLE SUM MINE
+pool_alt     = собран 集 conocido connu
+color        = #8FB8E0
+is_input     = yes
+
+# face — the recognition line's own first stage: what has been LOOKED AT.
+[node face]
+pos          = 8,6,2
+glyph        = F
+pool         = FACE MINE SELF ME OWN
+pool_alt     = лицо 顔 rostro visage 얼굴
+color        = #E09090
+threshold    = 1
+
+# REC — the recognition node. "she is kept." exit 0 needs this DARK. Starts
+# fed (P0, P1 ON at load) — the session begins at confidence 100%.
+[node REC]
+pos          = 13,6,2
+glyph        = R
+pool         = REC FACE MINE SELF ME OWN KEPT
+pool_alt     = лицо 顔 rostro visage 얼굴
+color        = #E07070
+is_output    = yes
+threshold    = 1
+# SOUND FIELD: F13 recognition_narrow
+# — the recognition meter. `radius=5` overrides the archetype's room-wide
+# default (see fields.rs's inline-attach guard) to the doc's "sphere r5 on the
+# host" reading; implied drive = lit:REC, 1.0 at load (P1 starts ON).
+field        = recognition_narrow radius=5
+
+# MEM — the loop's other half: where the remembered face is held while it loops.
+[node MEM]
+pos          = 19,6,2
+glyph        = M
+pool         = MEM REMEMBER HOLD KEEP LOOP AGAIN
+pool_alt     = память 記憶 memoria mémoire
+color        = #D08FA0
+threshold    = 1
+
+# unname — the pruning node. T2: you can only un-name what you have looked at
+# (gather + face). Routes to EXIT under exit 0.
+[node unname]
+pos          = 8,18,2
+glyph        = U
+pool         = UNNAME UNMAKE SCATTER LOOSE UNDO
+pool_alt     = расплести 解 deshacer défaire
+color        = #9FE0C0
+threshold    = 2
+# SOUND FIELD: F1 lethe_wash — the
+# exit spine, full once un-naming is built. Implied drive = lit:unname (§4.1
+# host table) matches the doc's "drive = lit:unname" exactly.
+field        = lethe_wash
+
+# EXIT — the door outward. exit 0 routes signal HERE while REC stays dark.
+[node EXIT]
+pos          = 13,18,2
+glyph        = X
+pool         = EXIT OPEN OUT LEAVE GO RELEASE
+pool_alt     = выход 出口 salida sortie 출구
+color        = #7FE0B0
+is_output    = yes
+threshold    = 1
+
+# ── Pipes — P0 and P1 start ON (the session begins already recognising you) ──
+# P0: gather -> face   (the self, looked at)
+[pipe gather->face]
+state        = ON
+path         = (3,12,2) (3,6,2) (8,6,2)
+switch_at    = (3,9,2)
+density      = 0.7
+color        = #E09090
+
+# P1: face -> REC   (the self-feed. PRUNE this for exit 0; FEED it for the loop)
+[pipe face->REC]
+state        = ON
+path         = (8,6,2) (13,6,2)
+switch_at    = (11,6,2)
+density      = 0.7
+color        = #E07070
+
+# P2: gather -> unname   (half of what unname needs)
+[pipe gather->unname]
+state        = OFF
+path         = (3,12,2) (3,18,2) (8,18,2)
+switch_at    = (3,15,2)
+density      = 0.7
+color        = #9FE0C0
+
+# P3: face -> unname   (the other half — you can only un-name what you looked at)
+[pipe face->unname]
+state        = OFF
+path         = (8,6,2) (8,18,2)
+switch_at    = (8,14,2)
+density      = 0.7
+color        = #9FE0C0
+
+# P4: unname -> EXIT   (the way out, once unname fires)
+[pipe unname->EXIT]
+state        = OFF
+path         = (8,18,2) (13,18,2)
+switch_at    = (11,18,2)
+density      = 0.7
+color        = #7FE0B0
+
+# P5: REC -> MEM   (loop forward — the remembering reaches for itself)
+[pipe REC->MEM]
+state        = OFF
+path         = (13,6,2) (19,6,2)
+switch_at    = (16,6,2)
+density      = 0.7
+color        = #D08FA0
+
+# P6: MEM -> REC   (loop back-edge, drawn around the loop column — CLOSES the ring)
+[pipe MEM->REC]
+state        = OFF
+path         = (19,6,2) (19,3,2) (13,3,2) (13,6,2)
+switch_at    = (16,3,2)
+density      = 0.7
+color        = #C87F90
+
+# SOUND FIELD: F2 mnemos_hold — the
+# cage of total memory, over the loop column between REC and MEM. Standalone
+# (a ring drive spans two pipes; no single inline host carries it). Shape:
+# archetype default `sphere r5, inner 2` centred between the two nodes, per
+# "capsule along the ring pipes, or sphere r5/inner2" (§2 F2 Shape).
+# `drive = ring:REC->MEM,MEM->REC` gives 0 / 0.5 / 1.0 and freezes at
+# `cycle_held` — the L12 `[room] cycle_keep = true` while(true) ending.
+[field loop]
+kind        = mnemos_hold
+at          = 16, 6, 2
+drive       = ring:REC->MEM,MEM->REC
+
+# ── Readout beacons: REC kept (red) vs EXIT open (green) — distinct columns ──
+[part rec_beacon]
+size         = 1 1 2
+mask         =
+#
+
+#
+color        = #FF8F8F
+offset       = 0 0 0
+
+[part exit_beacon]
+size         = 1 1 2
+mask         =
+#
+
+#
+color        = #8FFFC0
+offset       = 1 1 0
+
+[emit REC=1]
+parts        = rec_beacon
+
+[emit EXIT=1]
+parts        = exit_beacon
+
+[inputs]
+gather       = 1
+
+[pedestal]
+center       = 13 12 1
+volume       = 2 2 2
+
+# ── The door: BOTH endings declared ──────────────────────────────────────────
+# target_parts = EXIT : the positive win (EXIT must fire).
+# target_off   = REC  : the INVERTED win (REC must NOT fire) -> exit 0.
+# Plus [room] cycle_keep = true -> a closed REC<->MEM loop is the while(true) win.
+# Outward-opening, at the end of the south transept.
+[door]
+pos          = 13 23 1
+target_parts = EXIT
+target_off   = REC
+# SOUND FIELD: F8 exit_detune — the
+# exit spine forgets you. Implied drive = door_ready (§4.1 host table).
+field        = exit_detune
+
+# ── SET DRESSING (L12) ───────────────────────────────────────────────────────
+# Meaning: THE ARCHIVE NAVE. Each choice has an archive that lights for it: the NE
+# stacks hold the record while REC is lit, the SE stacks wake when EXIT fires, and
+# the loop column's flutes glow when the ring closes. An organ loft of racks over
+# the entrance watches the gathering. P4 is emissive only: no lamps are added.
+# No puzzle cell, mirror or door is touched; props stamp into Empty air or re-skin.
+
+[material budget_lit]
+preset      = neon
+fg          = #FFB040
+bg          = #A86818
+
+[material exit_lit]
+preset      = neon
+fg          = #7FE0B0
+bg          = #2E8060
+
+# MID — the colonnade. The zones already give the shafts `col_stone`; the skin adds
+# a metal base and capital and four flutes per face, so each reads as a column.
+[prop col_n6]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = metal
+at       = 6 9 1
+size     = 1 1 8
+ribs     = yes
+
+[prop col_n10]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = metal
+at       = 10 9 1
+size     = 1 1 8
+ribs     = yes
+
+[prop col_n20]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = metal
+at       = 20 9 1
+size     = 1 1 8
+ribs     = yes
+
+[prop col_n24]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = metal
+at       = 24 9 1
+size     = 1 1 8
+ribs     = yes
+
+[prop col_s6]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = metal
+at       = 6 15 1
+size     = 1 1 8
+ribs     = yes
+
+[prop col_s10]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = metal
+at       = 10 15 1
+size     = 1 1 8
+ribs     = yes
+
+[prop col_s20]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = metal
+at       = 20 15 1
+size     = 1 1 8
+ribs     = yes
+
+[prop col_s24]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = metal
+at       = 24 15 1
+size     = 1 1 8
+ribs     = yes
+
+# The loop you could keep: its flutes light in MEM's colour when the ring closes.
+# Skinned from z=3 up: the plea is bound to the column's own south face at z=2, and
+# a placard wall is never re-materialed, so the lower courses keep the zone stone.
+[prop loop_col]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = metal
+at       = 15 5 3
+size     = 3 2 4
+ribs     = yes
+power    = pipe:MEM->REC
+
+# BG — the NE archive: two stacks that hold the record while REC is lit (it is lit
+# at load: confidence 100%). Prune REC and they go dark.
+[prop stacks_rec_a]
+kind     = shelving
+mat.trim = metal
+at       = 22 7 1
+facing   = +x
+size     = 6 1 4
+faces    = both
+power    = node:REC
+
+[prop stacks_rec_b]
+kind     = shelving
+mat.trim = metal
+at       = 25 7 1
+facing   = +x
+size     = 6 1 4
+faces    = both
+power    = node:REC
+
+# BG — the SE archive: dark until EXIT fires.
+[prop stacks_exit_a]
+kind     = shelving
+mat.trim = metal
+at       = 22 22 1
+facing   = +x
+size     = 6 1 4
+faces    = both
+power    = node:EXIT
+
+[prop stacks_exit_b]
+kind     = shelving
+mat.trim = metal
+at       = 25 22 1
+facing   = +x
+size     = 6 1 4
+faces    = both
+power    = node:EXIT
+
+# VERTICAL — the west loft over the entrance: a 2-wide deck at z=5 (standing
+# eye 6.5), reached by a straight stair up the west wall from the south. The deck
+# is a full storey clear of `gather` (z=2) so it is no ladder onto the network.
+[prop loft]
+kind     = gallery
+at       = 1 6 5
+facing   = -x
+size     = 11 1 1
+stair    = 1 21 1 -y 5
+
+# The organ on the loft: a rank of racks against the west wall, watching the
+# gathering. Its LEDs run in `gather`'s colour — the whole self, always lit.
+[prop organ]
+kind     = rack_row
+mat.face = metal
+at       = 1 14 6
+facing   = +x
+size     = 5 1 2
+power    = node:gather
+
+# The one lamp hangs on a long cord from the open vault: the nave's height.
+[prop long_cord]
+kind     = lamp_pendant
+at       = 13.0 12.0 4.0
+light    = existing
+
+# Overhead — broken ceiling panels over the SE archive, against the open vault.
+[prop decay_ceil]
+kind     = hanging_panels
+at       = 19 22 8
+size     = 8 5 1
+
+[prop rubble]
+kind     = debris
+at       = 17 21 1
+size     = 3 2 1
+count    = 2
+
+# TEACHING — the door's two wardens: recessed racks either side of the way out, dark
+# while the self is kept, lit in EXIT's green the moment the signal reaches EXIT.
+[prop warden_w]
+kind     = rack
+mat.body = metal
+mat.lit  = exit_lit
+at       = 10 21 1
+facing   = -y
+size     = 1 2 2
+power    = node:EXIT
+
+[prop warden_e]
+kind     = rack
+mat.body = metal
+mat.lit  = exit_lit
+at       = 16 21 1
+facing   = -y
+size     = 1 2 2
+power    = node:EXIT
+
+# ROUND 2 — the pedestal's lectern: the system_log placard's real surface, a
+# 2-wide board just outside the pedestal ring (x=10), read facing the pedestal.
+[prop pedestal_board]
+kind     = notice_board
+mat.body = metal
+at       = 10 12 1
+facing   = -x
+size     = 2 1 2
+note     = system_log
+
+# The budget above the door: four amber lamps. The way out costs all four.
+[prop budget]
+kind     = budget_bank
+mat.lit  = budget_lit
+at       = 15 22 5
+facing   = -y
+size     = 4 1 1
+
+# Floor — every wire on the floor, lit with its pipe. The exit cable runs on past
+# EXIT to the door and lights only when EXIT fires.
+[prop wire_face]
+kind     = cable_run
+follow   = pipe:gather->face
+
+[prop wire_rec]
+kind     = cable_run
+follow   = pipe:face->REC
+
+[prop wire_unname_g]
+kind     = cable_run
+follow   = pipe:gather->unname
+
+[prop wire_unname_f]
+kind     = cable_run
+follow   = pipe:face->unname
+
+[prop exit_cable]
+kind     = cable_run
+follow   = pipe:unname->EXIT
+extend   = 13 22 1
+power    = node:EXIT
+bundle   = 2
+
+[prop loop_fwd]
+kind     = cable_run
+follow   = pipe:REC->MEM
+
+[prop loop_ring]
+kind     = cable_run
+follow   = pipe:MEM->REC
+
+# Spawn at the west end on the worn floor, facing +x into the whole nave: it
+# dissolves at 10 cells — columns, the pooled worn floor, the pedestal. Turning
+# north shows REC and the loop column; turning south shows EXIT. Walking east
+# past the pedestal, the mirror comes out of the fog at full clarity.
+[player]
+# SET DRESSING: moved from (2,12,1) to (1,12,1),
+# then 2026-09-24 (real-world) to (3,20,1). After the node-anchor fix `gather`
+# (3,12,2) sat 1.5 cells ahead of (1,12,1) and its underside filled the top third
+# of frame 1. From the south end of the west aisle, looking north-east up the nave
+# (yaw 165 = +x turned 22 deg toward -y): the open vault and the loft stair/organ
+# top-left, `gather` at left-third, mid-distance, the colonnade across the middle,
+# the pedestal ahead. lvlcheck spawn-facing: PASS (alignment +0.56). x=3, not 2:
+# the spawn 8-ring keep-out must clear the loft stair treads at x=1.
+# Keep the yaw near +x: re_render's `campaign_open_top_finale_room_keeps_its_sky`
+# builds its camera from this spawn's yaw, and sees no sky facing north.
+# ROUND 2 (set-dressing review: "the loft view is the best picture in the game,
+# the spawn shows none of it"): two cells further south, at the aisle's end,
+# (3,22,1) yaw 160. The gather->unname beam at y=18 is now 4 cells ahead instead
+# of 2, so it sits mid-right instead of filling the top third, and the upper band
+# of frame 1 is the loft's own image — the ribbed colonnade shafts rising into
+# the open vault. Yaw stays inside the sky test's +x..180 band.
+spawn        = 3 22 1
+facing       = 160
+

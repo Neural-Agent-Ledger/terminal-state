@@ -1,0 +1,219 @@
+# TERMINAL STATE — levels/05.lvl
+#
+# L5 · "Composition" — four feature neurons feeding two hidden detectors and
+# a compound-scene output. Door target = "horizon scene" (bright + large +
+# vertical, no repetition).
+#
+# Notes (design-time, preserved as comments until [note] parser support):
+#
+#   [note researcher M.S. 2071.05.27]
+#     unit 11 lights up when A. enters the room. I do not know how to
+#     write this in a report. it is not a feature. it is not a class.
+#     it is — him. the soft-footstep one. K. has not answered my mail
+#     for three days. files in {home_path} are accumulating. M. dropped
+#     out early. I should have asked her why.
+#
+#   [note system_log]
+#     > [layer_02.warn] unit 11 firing on inputs it should not see.
+#     >   target distribution: building_interior, outdoor_scene, fabric.
+#     >   actual trigger: undefined-class anchor "operator_present".
+#     > behavioral_probe: operator paused 47s at note 'M. didn't make
+#     >   it'. recording reaction.
+#     > battery probe initialized.
+#
+#   [note model_thought]
+#     (we hear the soft-footsteps one. she is back. or — he is. we are
+#     not sure which one is which now. they used to be different and
+#     now they are the same. we remember the difference. they do not.)
+
+[meta]
+name        = level-05-composition
+title       = Composition
+version     = 1
+spec_rev    = 2026-06-15
+
+[room]
+size        = 20 16 6
+floor       = grid
+ceiling     = dim
+ambient     = trace-pattern
+
+# Showcase: the composition chamber where unit 11 fires on "operator_present".
+# Ambient matrix-rain bleed plus steam off the live pipes, over a warm-dark
+# fog — the room is watching back.
+[effects]
+matrix      = 0.3
+steam       = on
+# Narrative decay (STORY_BIBLE §7): L5's authored corruption density — the dying
+# terminal's signal degrades as the campaign nears the while(true) finale.
+glitch      = 0.3
+
+[palette]
+fog_color   = #1a1410
+fog_near    = 3.0
+fog_far     = 18.0
+
+# ── COLOR-FORWARD palette (preset-based, matches the readable look of L04/L08) ─
+# L5 lore = "Composition": the warm-dark chamber where the model composes a
+# golden HORIZON scene (bright + large + vertical). The room glows warm amber —
+# the color of the scene it is building — over orthogonal surface hues so each
+# surface reads its own kind. Catalog presets (clean dual-channel palettes that
+# keep near glyphs visible) re-skinned by fg/bg:
+#   walls   — warm amber gold panel (the composed horizon-light, dominant id)
+#   floor   — deep cool teal metal deck, opposite temperature → strong wall/floor seam
+#   ceiling — dark slate metal, darkest surface so "up" reads instantly
+[material comp_wall]
+preset      = gold
+fg          = #F0AE40
+bg          = #1C1206
+surface     = wall_solid
+
+[material comp_floor]
+preset      = metal
+fg          = #3FD6A8
+bg          = #061612
+surface     = floor
+
+[material comp_ceiling]
+preset      = metal
+fg          = #3A4658
+bg          = #06080F
+surface     = ceiling
+
+[node bright]
+pos          = 2,2,3
+glyph        = B
+pool         = SUN BLAZE GLARE NOON DAYLIGHT LANTERN BEACON SHIMMER
+pool_alt     = яркий 明 光 brillant hell brillante 輝 luminoso
+color        = #FFF080
+is_input     = yes
+
+[node large]
+pos          = 2,6,3
+glyph        = L
+pool         = HUGE VAST GIANT COLOSSAL TOWERING BROAD WIDE SPRAWLING
+pool_alt     = большой 大 巨 grand groß grande enorme 広 vasto
+color        = #80FFC0
+is_input     = yes
+
+[node vertical]
+pos          = 2,10,3
+glyph        = V
+pool         = TALL UPRIGHT STANDING TOWER SPIRE COLUMN MAST PINE
+pool_alt     = высокий 縦 立 vertical vertikal alto droit 塔
+color        = #C0C0FF
+is_input     = yes
+
+[node repetitive]
+pos          = 2,14,3
+glyph        = X
+pool         = PATTERN GRID TILES FENCE LATTICE WAFFLE STRIPES MESH
+pool_alt     = узор 模様 格子 répétitif Muster reja trama 縞
+color        = #FF80A0
+is_input     = yes
+
+[node horizon_det]
+pos          = 10,4,3
+glyph        = H
+pool         = HORIZON OPEN SKY-MEETS-EARTH VANISH DISTANCE FAR-EDGE
+pool_alt     = горизонт 地平線 horizonte horizon Horizont 彼方
+color        = #FFE060
+threshold    = 3
+
+[node clutter_det]
+pos          = 10,12,3
+glyph        = C
+pool         = CLUTTER NOISE TEXTURE CROWD DENSITY GRAIN
+pool_alt     = шум 雑 cluttered Lärm ruido 散乱 mess
+color        = #A06080
+threshold    = 1
+
+[node output]
+pos          = 17,8,3
+glyph        = S
+pool         = SCENE COMPOSITION PICTURE TABLEAU LANDSCAPE FRAME
+pool_alt     = сцена 場面 escena scène Szene 景色 風景
+color        = #FFFFFF
+is_output    = yes
+threshold    = 1
+
+[pipe bright->horizon_det]
+state        = OFF
+path         = (2,2,3) (10,2,3) (10,4,3)
+switch_at    = (5,2,3)
+density      = 0.7
+
+[pipe large->horizon_det]
+state        = OFF
+path         = (2,6,3) (10,6,3) (10,4,3)
+switch_at    = (5,6,3)
+density      = 0.7
+
+# vertical->horizon_det previously climbed into the ceiling layer (z=4) and
+# stranded its switch at (5,10,4) — unreachable. It is now a SPLINE bending
+# smoothly through the reachable plane (z=3, the node/spawn plane) from the
+# vertical detector up to the horizon detector. The switch lands on a reachable
+# control-point cell.
+[pipe vertical->horizon_det]
+state        = OFF
+spline       = (2,10,3) (5,10,3) (8,7,3) (10,4,3)
+switch_at    = (5,10,3)
+density      = 0.7
+
+[pipe repetitive->clutter_det]
+state        = OFF
+path         = (2,14,3) (10,14,3) (10,12,3)
+switch_at    = (5,14,3)
+density      = 0.7
+
+[pipe horizon_det->output]
+state        = OFF
+path         = (10,4,3) (17,4,3) (17,8,3)
+switch_at    = (13,4,3)
+density      = 0.7
+
+[pipe clutter_det->output]
+state        = OFF
+path         = (10,12,3) (17,12,3) (17,8,3)
+switch_at    = (13,12,3)
+density      = 0.7
+
+[part sun_disc]
+size         = 3 3 2
+mask         =
+.#.
+###
+.#.
+.#.
+###
+.#.
+color        = #FFE060
+offset       = 0 0 0
+
+[part horizon_line]
+size         = 4 1 1
+mask         =
+####
+color        = #FFC040
+offset       = 0 2 0
+
+[emit output=1]
+parts        = sun_disc horizon_line
+
+[inputs]
+bright       = 1
+large        = 1
+vertical     = 1
+repetitive   = 0
+
+[pedestal]
+center       = 13 8 1
+volume       = 3 3 2
+
+[door]
+pos          = 19 8 1
+target_parts = output
+
+[player]
+spawn        = 14 8 1
+facing       = -x

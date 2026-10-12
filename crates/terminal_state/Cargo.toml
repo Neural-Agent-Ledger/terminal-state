@@ -1,0 +1,117 @@
+[package]
+# This is the only crate in the game repo, so the historical `re_*`
+# engine-crate prefix (`re_game`) would mislead — the crate is named after
+# the package instead. The binary name is unaffected: still `terminal-state`.
+name = "terminal_state"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "terminal_state"
+path = "src/lib.rs"
+
+[[bin]]
+name = "terminal-state"
+path = "src/main.rs"
+
+# The present backend is forwarded to `re_present`. Terminal is the only backend
+# (the GPU window backend was retired — this is a terminal-native game).
+[features]
+default = ["backend-terminal"]
+# The terminal backend just forwards to re_present. Interact is a backend-neutral
+# `re_present::InteractPressed` message, so this binary needs NO terminal input
+# dependency of its own (no bevy_ratatui) — re_present owns all input. The
+# faced-cell math stays here.
+backend-terminal = ["re_present/backend-terminal"]
+# Dev-only: print the Bevy schedule/system graph as GraphViz via
+# `terminal-state --dump-schedule` (see src/main.rs). Off by default — zero cost to
+# the shipped build. Build with: cargo build --features debugdump
+debugdump = ["dep:bevy_mod_debugdump"]
+# Dev-only: Bevy Remote Protocol server (BRP) for live ECS inspection by an
+# external client (bevy_remote_inspector / bevy_brp_mcp). Pulls bevy's
+# bevy_remote feature and turns on Reflect for the inspectable types. The game
+# stays headless — NO wgpu/winit. Off in the shipped/dist build. Run with:
+#   cargo run -p terminal_state --features dev
+# Forwards to `re_runtime/dev` so the same feature flag also turns on BRP +
+# reflect for the types that live in `re_runtime` (the engine crate, not
+# this one).
+dev = ["bevy/bevy_remote", "re_world/reflect", "re_core/reflect", "re_runtime/dev"]
+
+[lints]
+workspace = true
+
+[dependencies]
+bevy = { workspace = true }
+re_core = { workspace = true }
+re_world = { workspace = true }
+re_level = { workspace = true }
+re_render = { workspace = true }
+# re_glitch is the glitch post-process crate. Engine-pure (re_core only — its
+# `glam` dep was removed 2026-09-28 as unused). Declared through the same
+# `# BEGIN engine-deps` marked block every other engine crate uses (see root
+# Cargo.toml) rather than a literal path, since the engine crates live in the
+# separate `terminal3d` repository.
+re_glitch = { workspace = true }
+# re_postfx is the cinematic / screen-space post-process stack (edge-outline,
+# SSAO, bloom, DoF, color-grade, vignette, dither). Same convention as
+# re_glitch above. Engine-pure (re_core + glam only). Runs BEFORE glitch so
+# corruption sits on top of the graded image.
+re_postfx = { workspace = true }
+re_present = { workspace = true, default-features = false }
+re_puzzle = { workspace = true }
+re_audio = { workspace = true }
+
+# `re_asciifx` (seeded 2D ASCII effects + paint helpers) and `re_runtime` (the
+# generic `.lvl` play session) are engine crates, consumed directly
+# (`re_asciifx::x` / `re_runtime::x`) with no compatibility shims in this
+# crate.
+re_asciifx = { workspace = true }
+re_runtime = { workspace = true }
+
+# Progress save/load (src/save.rs). serde derives the Progress type; toml is the
+# on-disk format. Both are already workspace deps.
+serde = { workspace = true }
+toml = { workspace = true }
+
+# bevy_rand gives the App a reproducible, ECS-managed RNG resource for NEW
+# randomness; the golden-tested LCG/SplitMix paths in re_audio/re_glitch are
+# kept untouched. Headless-clean.
+bevy_rand = { workspace = true }
+bevy_prng = { workspace = true }
+
+# Dev-only schedule/system-graph dumper (behind the `debugdump` feature).
+# default-features off → no bevy_render, fully headless.
+bevy_mod_debugdump = { workspace = true, optional = true }
+
+[dev-dependencies]
+# Test-only engine crates:
+#   * re_voximport — `tests/campaign_prop_style.rs` compares re_level's parsed
+#     `[meta] prop_style` against re_voximport's writer default;
+#     terminal_state has no other path to re_voximport.
+#   * re_lvlcheck   — `tests/campaign_lint.rs` lints the campaign levels via
+#     `re_lvlcheck` (the "twelve budgets" assertion).
+#   * re_golden     — `tests/golden_campaign.rs`, the golden-framebuffer
+#     harness for the campaign corpus.
+re_voximport = { workspace = true }
+re_lvlcheck = { workspace = true }
+re_golden = { workspace = true }
+# The RNG trait (`next_u32`) that bevy_prng's `WyRand` implements; used only by
+# the rng-reproducibility tests. Pinned to bevy_prng 0.15's rand_core (^0.10).
+rand_core = "0.10"
+# SHA-256 for test-only byte-identity/regression pins (pure Rust, no terminal
+# dep). The golden-framebuffer harness itself lives in `re_golden` (its own
+# `sha2` dep); `tests/golden_campaign.rs` here consumes that harness and does
+# not hash directly. The remaining call sites in this crate are
+# `tests/l1_first_pulse_integration.rs` and the `#[cfg(test)]` module in
+# `src/code_panels.rs` (a panel-snapshot byte-identity pin narrowed to panels
+# 0-2 only — panel 3 is this crate's own live `main.rs`, deliberately
+# unpinned). Bumped 0.10 -> 0.11 (2026-09-28) — same
+# `Digest`/`Sha256::new().update()/.finalize()` surface, verified by a scratch
+# build before landing here.
+sha2 = "0.11"
+# JSON parsing for the network-isolation guard (no_net_in_game_build.rs).
+# Parses `cargo metadata` output to walk terminal_state's normal-dep subtree and assert
+# no networking crate is reachable. Already present in Cargo.lock as a transitive
+# dep — this adds no new download.
+serde_json = "1"

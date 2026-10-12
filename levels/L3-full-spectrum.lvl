@@ -1,0 +1,845 @@
+# TERMINAL STATE — levels/L3-full-spectrum.lvl
+#
+# L3 · "Full Spectrum" — the story-true successor to levels/03.lvl (which stays in
+# the ARCHIVE folder, golden and untouched).
+#
+# SPATIAL + GRAPH REBUILD 2026-09-23 (real-world) (the spatial redesign §3 L3,
+# the puzzle-graph redesign §L3). Identity: a cold spectrometry room
+# with an iron mezzanine: three coloured lamps mix on the floor, snow falls
+# through the double height, and your own handwriting waits at the foot of the
+# stair.
+#
+# SPACE: resized 18x16x5 -> 18x16x9 (LOCKED node/pipe/switch/door coordinates are
+# unchanged — they all still fit the original x,y footprint). A north-wall
+# MEZZANINE (slab z=5, walk z=6..7, over y=1..2, x=9..16) is reached by a new
+# straight 5-tread stair on y=1 from x=4 (`storey_height = 5`), landing (9,1,5).
+# The mezzanine footprint is clear of every pipe cell (the lowest service run is
+# y=3), so this is a pure ADD, not a reroute. `[cells]` is therefore authored for
+# the first time on this level: every one of the seven pipes' `render_pipes`
+# traces is repainted cell-for-cell as WallTrace so the network stays exactly as
+# visible as it was as a flat auto-boxed room (see L1's own header for why an
+# authored `[cells]` grid must repaint a path or it silently goes invisible).
+# Spawn moves upstairs to (9,1,6) facing +y — right at the stair landing, so
+# frame 1 looks down over the whole room before the player takes the stair down
+# to wire the floor. (Round-2 dressing moved it to the walkway's east end, (16,2,6)
+# yaw 390 — see [player].)
+#
+# FIX (real-world) (2026-09-23, found by `cold_levels_render_visible_snow_in_a_
+# dump_frame`): the brief's own (14,2,6) put the mezzanine camera near the EAST
+# edge of the walkway, most of the room's synthesized snow lattice (`re_level::
+# snow_emitters`, a fixed 3x4x4 grid over the whole room interior) fell outside
+# its forward view, and only 14 flake cells read in the dump frame against the
+# CANON `snow = 0.4` (LOCKED, do not raise it — the spatial redesign §3 L3 "Keep").
+# The landing (9,1,6) is the same upstairs vantage, same facing, same "look down
+# before you descend" beat — just centred over the room's x-span instead of
+# offset toward one wall — and clears the threshold (21-24 flake cells measured).
+#
+# GRAPH (the puzzle-graph redesign §L3 — overrides the shipped defect where they
+# conflict): the shipped graph let the WRONG hidden node (h2, "the second hidden
+# node... it remembers the wrong room") also open the door in 3 toggles, so the
+# note's "make magenta" was advice, not a rule. Fix: `h2` threshold 2 -> 1 (so the
+# glazed-over false memory is just as easy to reach, and just as clearly wrong),
+# and `[door] target_parts = output h1` (the door now also requires the TRUE
+# memory h1, not just the base `output`). The emit is split so the player SEES
+# which memory they built: `output=1` lights the base for any colour, `h1=1`
+# lights the magenta X (the true memory), `h2=1` lights a new teal diamond (the
+# false one). Node positions, all seven pipe paths/switches, `power_budget = 3`,
+# and every note text are UNCHANGED — LOCKED.
+#
+# Fix D1 (the spatial redesign §1): `ambient` trace-pattern -> solid, so the room's
+# `wall_solid`/`floor` materials actually paint instead of the inert
+# `live_trace` binding. The wall material moves off `preset = ice` (reflective —
+# would turn this into an unintended mirror, invariant 7) onto an explicit
+# `recipe = circuit` with the same ice-blue colours; the floor moves off the
+# self-lit `metal` preset onto a LIT `grain` recipe so the three lamp-pools
+# actually show on it.
+#
+# CAMPAIGN SLOT: manifest #3 · movement P1 "First Sight" · load ▃
+#   **TWIST 1 lands here** — and PROGRESSION §1 puts it in a deliberately LOW
+#   cognitive valley so the player has spare attention to feel the dread. Every
+#   individual solve is easy; the level's demand is BREADTH, not depth.
+#
+# NEW IDEA (exactly one): **truth-table breadth** — three input bits, eight worlds.
+#   "3 bits = 8 worlds. I contain more than I was shown."
+#
+# ── MECHANIC (pure data — two hidden detectors over three inputs) ─────────────
+#   R (IN=1) ─┬──────────────►  h1 MAGENTA (T=2)  ─┐
+#             └──(long arc)──►  h2 TEAL    (T=1)  ─┤
+#   G (IN=1) ────────────────►  h2 TEAL    (T=1)  ─┼─►  output (T=1) ─► door (needs output AND h1)
+#   B (IN=1) ─┬──────────────►  h1 MAGENTA (T=2)  ─┘
+#             └──────────────►  h2 TEAL    (T=1)
+#
+# Eight reachable input worlds; the door wants MAGENTA. h1 fires on R+B (the full
+# spectrum closing); h2 (threshold 1, the puzzle-graph redesign §L3) fires on any ONE of
+# R/G/B and is the SECOND HIDDEN NODE the unsigned note warns about — "don't trust
+# the second hidden node when B is high. it remembers the wrong room." h2 can
+# still light `output`, but the door ALSO requires h1 (`target_parts = output h1`),
+# so h2's route lights the base and the wrong teal diamond and the door stays
+# shut: a *legal*-looking but losing solve that gives you the wrong colour and the
+# wrong memory: TEAL, MIST, GLAZE — the glazed-over look of a false recollection.
+#
+# SOLUTION (3 toggles): R->h1 ON, B->h1 ON, h1->output ON. Minimum 3, unique.
+#   (h2 also reaches `output` in as little as 1-2 toggles, but never the door —
+#    the discipline the level teaches is choosing the RIGHT hidden node, and the
+#    note is how you know which. The colour of the emitted block is the verdict.)
+#
+# READOUT (WORD_STORY §RESULT, canon): FIRE + SEA -> MAGENTA -> MODEL   — A.
+# NAME SHARD 3: the initial `A` — from an unsigned note in your own hand.
+#
+# ── TOKEN DISCIPLINE (W1 allowlist) ───────────────────────────────────────────
+# The duplicate-handle log uses `{time}` — an ALLOWLISTED Tier-1 alias of
+# `{local_time}` — on its own line, so it resolves in both opt states and never
+# drops. `tail.log modified 2026-06-18 03:14` is a LITERAL future mtime
+# (STORY_BIBLE §7 "Future mtime"); the real `{last_file}` read is A-7-permitted
+# only at L12, so nothing is interpolated for it here. FORM 12 and FORM 03 carry
+# no tokens at all.
+#
+# Verify:
+#   cargo run -q -p re_game -- --dump levels/L3-full-spectrum.lvl --ansi
+#   cargo run -q -p re_lvlcheck --bin lvlcheck -- levels/L3-full-spectrum.lvl
+
+[meta]
+name        = level-L3-full-spectrum
+title       = Full Spectrum
+version     = 1
+spec_rev    = 2026-09-23
+prop_style  = lab
+
+[room]
+size        = 18 16 9
+floor       = grid
+ceiling     = dim
+ambient     = solid
+storey_height = 5
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05). At most N pipes may be
+# ON at the same time; switching one ON at the cap is REFUSED (the pipe stays off
+# and nothing else changes), switching one OFF always frees a unit. Absent or 0 =
+# unlimited, which is what every non-campaign level still carries.
+# WHY: the forward pass has no inhibition, so activation is MONOTONE in the ON-set
+# — without a cap, all-switches-ON wins whenever anything wins, and every decoy in
+# the campaign is decorative. This is the number that makes wrong wiring cost.
+# THIS LEVEL: 3 of 7 pipes. One hidden node has to reach threshold 2 and then reach the
+# output: e.g. R->h2 + G->h2 + h2->output. Four of the seven wires are slack the
+# player does not have. Lighting the whole spectrum is now exactly the wrong move.
+power_budget = 3
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# ── ESCALATION (manifest fog_far = 17.0) ──────────────────────────────────────
+# **The cold begins here.** `snow = 0.4` and `fog_color = #101826` are the CANON
+# L3 values (STORY_BIBLE §5 L3: "холодный туман + снег — комната, которую заметка
+# помнит неправильно"): degradation becomes visible for the first time. fog_far
+# steps down from L2's 19.0 — the world starts closing in. Still no matrix bleed:
+# the corruption ramp starts at L4, so the cold arrives BEFORE the rot.
+[effects]
+snow        = 0.4
+
+[palette]
+fog_color   = #101826
+fog_near    = 2.5
+fog_far     = 17.0
+
+# ── LIGHTING (the spatial redesign) ───────────────────────────────────
+# Lamp count = the count of what you are learning: L3 has 3 (RGB, "three bits").
+# z raised 3.6 -> 4.6 vs the brief's number: the brief's z=3.6 was calibrated for
+# the OLD 5-tall room (ceiling at z=4); this room is now double-height and the
+# x=5 column at z=3 is where the puzzle-graph redesign's `R->h2`/`B->h1` pipes climb to
+# the elevated service layer (LOCKED path), so a lamp at the brief's exact
+# position sits buried inside that WallTrace geometry (lvlcheck `lighting` WARN).
+# z=4.6 clears it — still low, still reads as "over the switch/input row".
+[light]
+pos         = 5.0, 3.0, 4.6
+color       = #FF4040
+radius      = 4.5
+intensity   = 1.0
+
+[light]
+pos         = 5.0, 8.0, 4.6
+color       = #40FF40
+radius      = 4.5
+intensity   = 0.8
+
+[light]
+pos         = 5.0, 13.0, 4.6
+color       = #4080FF
+radius      = 4.5
+intensity   = 1.0
+
+[atmosphere]
+ambient     = 0.10
+key_color   = #405070
+postfx      = clean
+
+# ── COLOR-FORWARD palette ─────────────────────────────────────────────────────
+# A neon chamber going cold: ice-blue masonry (the room the note remembers wrong),
+# a steel deck, and near-black overhead. The live wire is violet — the spectrum
+# closing on the colour of the bruise. Fix D1: `ambient = solid` means these
+# perimeter walls actually paint now; the wall moves OFF `preset = ice` (which is
+# reflective — invariant 7, would turn this into an unintended mirror) onto an
+# explicit `recipe = circuit` with the same colours, and the floor moves off the
+# self-lit `metal` preset onto a LIT `grain` recipe so the three lamp-pools show.
+[material spectrum_wall]
+fg          = #6EA0D8
+bg          = #070C16
+recipe      = circuit scale=1.6
+surface     = wall_solid
+
+[material spectrum_floor]
+fg          = #5F6C82
+bg          = #080C14
+recipe      = grain scale=3.0 speck=0.15
+surface     = floor
+
+[material spectrum_ceiling]
+preset      = metal
+fg          = #2A3040
+bg          = #04050A
+surface     = ceiling
+
+[material live_trace]
+preset      = neon
+fg          = #E070E0
+bg          = #140818
+surface     = wall_trace
+
+# ── DENSE [cells] GRID (the spatial redesign) ─────────────────────────
+# 18 cols (x=0..17) x 16 rows (y=0..15) x 9 z-layers. z=0 floor slab, z=1..4 the
+# lower hall (double height), z=5 the mezzanine slab (+ the 5 stair treads and
+# landing), z=6..7 the mezzanine walk, z=8 ceiling. `render_pipes` tags every
+# path cell's side_data BEFORE this grid stamps (order: stamp_pipes -> [cells]),
+# and `[cells]` PRESERVES side_data while it is authoritative for KIND — so every
+# `/` painted below is one of the seven pipes' own expanded path cells (switch
+# cells included), reproducing exactly what the flat auto-boxed room used to show
+# implicitly. The six node cells (R,G,B,h1,h2,output) and the door are
+# deliberately left as air here; nodes auto-restore to Object (they are Empty in
+# this grid), matching L1's own convention.
+[cells]
+size        = 18 16 9
+
+# z=0 — floor slab.
+##################
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+#________________#
+##################
+
+# z=1 — lower hall. Tread 1 at (4,1,1).
+##################
+#...#............#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+##################
+
+# z=2 — lower hall, the puzzle's main network plane. Tread 2 at (5,1,2).
+# R->h1 on y=3, G->h2 on y=8, B->h2 on y=13; h1->output on y=5/x=15,
+# h2->output on y=11/x=15. Every cell below is a painted pipe path segment.
+##################
+#....#...........#
+#................#
+#..///////.......#
+#......../.......#
+#.........//////.#
+#............../.#
+#............../.#
+#..///////.......#
+#......../...../.#
+#......../...../.#
+#.........//////.#
+#......../.......#
+#..///////.......#
+#................#
+##################
+
+# z=3 — the elevated service layer. Tread 3 at (6,1,3). R->h2 runs the x=5
+# column (y=3..11) after climbing here at (2,3,3); B->h1 runs the x=9 column
+# (y=5..13) after climbing at (2,13,3), crossing the river of pipes at y=11.
+##################
+#.....#..........#
+#................#
+#.////...........#
+#..../...........#
+#..../.../.......#
+#..../.../.......#
+#..../.../.......#
+#..../.../.......#
+#..../.../.......#
+#..../.../.......#
+#..../////.......#
+#......../.......#
+#.////////.......#
+#................#
+##################
+
+# z=4 — lower hall (open air, the double-height headroom). Tread 4 at (7,1,4).
+##################
+#......#.........#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+##################
+
+# z=5 — the mezzanine SLAB (Floor '_') over y=1..2, x=9..16. Tread 5 at (8,1,5)
+# and the landing at (9,1,5) sit at the slab's own height, at its west edge.
+# Everywhere else at this height is still open lower-hall air (the slab is a
+# small platform, not a second floor over the whole footprint).
+##################
+#.......##_______#
+#........________#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+##################
+
+# z=6 — the mezzanine WALK layer. Open air everywhere (the "open edge at y=2/3"
+# overlook — no railing on the south side by design); the player only ever
+# walks the x=9..16,y=1..2 footprint above the z=5 slab. Spawn is here.
+##################
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+##################
+
+# z=7 — the mezzanine WALK layer, upper half (headroom for the z=6 walkway).
+##################
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+##################
+
+# z=8 — ceiling slab.
+##################
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+#^^^^^^^^^^^^^^^^#
+##################
+
+# Staircase geometry — 5 straight treads, storey_height = 5, landing (9,1,5).
+shapes =
+4 1 1 rampz posx
+5 1 2 rampz posx
+6 1 3 rampz posx
+7 1 4 rampz posx
+8 1 5 rampz posx
+
+# ── NODES ─────────────────────────────────────────────────────────────────────
+# Pools VERBATIM from WORD_STORY §2 (L3 rows), anchor word first.
+
+[node R]
+pos          = 2,3,2
+glyph        = R
+pool         = FIRE BLOOD ROSE FLAME DAWN BRICK CRIMSON RUBY EMBER GARNET
+pool_alt     = огонь кровь 火 紅 fuego rouge Feuer أحمر vermelho
+color        = #FF4040
+is_input     = yes
+
+[node G]
+pos          = 2,8,2
+glyph        = G
+pool         = LEAF MOSS GRASS FOREST MINT JADE FERN VINE SPRING CHLOROPHYLL
+pool_alt     = зелёный 緑 verde vert grün 翠 lush 草
+color        = #40FF40
+is_input     = yes
+
+[node B]
+pos          = 2,13,2
+glyph        = B
+pool         = SEA SKY OCEAN COBALT SAPPHIRE TWILIGHT FROST GLACIER INK NIGHT
+pool_alt     = синий море 青 蒼 azul bleu blau небо océan
+color        = #4080FF
+is_input     = yes
+
+# h1 — the spectrum closing. BRUISE and WINE sit in its pool: the trauma showing
+# through in the colour (WORD_STORY §3 L3).
+[node h1]
+pos          = 9,5,2
+glyph        = M
+pool         = MAGENTA VIOLET DUSK BRUISE WINE BERRY ORCHID FUCHSIA
+pool_alt     = пурпур 紫 magenta violet violeta lila 茜
+color        = #FF40FF
+threshold    = 2
+
+# h2 — THE SECOND HIDDEN NODE. GLAZE, MIST: the colour of a false memory, the
+# glazed-over look. It fires as honestly as h1 and remembers the wrong room.
+# threshold 2->1 (the puzzle-graph redesign §L3): the shipped T=2 let h2 also reach the
+# door in 3 toggles (a decoy that wins). At T=1 the wrong room is just as easy to
+# reach and just as clearly wrong — the door now also requires h1 (see [door]).
+[node h2]
+pos          = 9,11,2
+glyph        = T
+pool         = TEAL CYAN AQUA TURQUOISE LAGOON MIST GLAZE
+pool_alt     = бирюза 青緑 cian cyan türkis 海色
+color        = #40D0D0
+threshold    = 1
+
+[node output]
+pos          = 15,8,2
+glyph        = O
+pool         = MODEL OUTPUT EMIT SHINE PEDESTAL
+pool_alt     = выход モデル salida sortie Modell
+color        = #FFFFFF
+is_output    = yes
+threshold    = 1
+
+# ── PIPES (all OFF at load) ───────────────────────────────────────────────────
+
+[pipe R->h1]
+state        = OFF
+path         = (2,3,2) (9,3,2) (9,5,2)
+switch_at    = (5,3,2)
+density      = 0.7
+color        = #FF4040
+
+# B climbs to the z=3 service layer and crosses the room overhead — the long blue
+# run. Its switch sits on the raised deck at (5,13,3), inside jump reach.
+[pipe B->h1]
+state        = OFF
+path         = (2,13,2) (2,13,3) (9,13,3) (9,5,3) (9,5,2)
+switch_at    = (5,13,3)
+density      = 0.7
+color        = #4080FF
+
+[pipe G->h2]
+state        = OFF
+path         = (2,8,2) (9,8,2) (9,11,2)
+switch_at    = (5,8,2)
+density      = 0.6
+color        = #40FF40
+
+[pipe B->h2]
+state        = OFF
+path         = (2,13,2) (9,13,2) (9,11,2)
+switch_at    = (5,13,2)
+density      = 0.6
+color        = #4080FF
+
+# The long red arc into the second hidden node: R also feeds the room that
+# remembers wrong.
+[pipe R->h2]
+state        = OFF
+path         = (2,3,2) (2,3,3) (5,3,3) (5,11,3) (9,11,3) (9,11,2)
+switch_at    = (5,6,3)
+density      = 0.6
+color        = #FF4040
+
+[pipe h1->output]
+state        = OFF
+path         = (9,5,2) (15,5,2) (15,8,2)
+switch_at    = (12,5,2)
+density      = 0.7
+color        = #FF40FF
+
+[pipe h2->output]
+state        = OFF
+path         = (9,11,2) (15,11,2) (15,8,2)
+switch_at    = (12,11,2)
+density      = 0.7
+color        = #40D0D0
+
+# ── EMIT (split per the puzzle-graph redesign §L3) ────────────────────
+# The base lights for ANY colour; the X is the true memory (h1 only); the new
+# diamond is the wrong room, shown so the player SEES which memory they built.
+#
+# FIX (real-world) (2026-09-23, found by emit_parts_render): the graph doc's
+# illustrative `offset = 0 0 1` for BOTH magenta_glyph and teal_glyph put two
+# [emit] clauses entirely on the same figure plane, which is ambiguous for the
+# generic "one figure layer above one base layer" reward convention every other
+# two-part campaign level uses (`figure_and_base_clauses` — deliberately, so no
+# level can silently have two competing "the" figures). The disjoint X/diamond
+# masks are unaffected; only the diamond's PLANE moves one cell higher, to its
+# own third layer, so the reward reads as three honest storeys (base, true
+# memory, false memory) instead of two clauses fighting over one.
+# Round 3 (design pass 2, "give figures a two-tone top"): every clause keeps its
+# full storey — from the mezzanine spawn the reward sits at the bottom edge of the
+# frame and a shorter band drops out of it — but each now carries a pale top of its own
+# hue, so the three storeys read as stacked shapes with lids, not one neon column.
+[part magenta_glyph]
+size         = 3 3 1
+mask         =
+#.#
+.#.
+#.#
+color        = #FF40FF
+top          = #FFD0FF
+top_from     = 0.5
+offset       = 0 0 1
+
+[part magenta_base]
+size         = 3 3 1
+mask         =
+###
+...
+...
+color        = #6EA0D8
+top          = #C8E0FF
+top_from     = 0.6
+offset       = 0 0 0
+
+[part teal_glyph]
+size         = 3 3 1
+mask         =
+.#.
+#.#
+.#.
+color        = #40D0D0
+top          = #D0FFFF
+top_from     = 0.5
+offset       = 0 0 2
+
+[emit output=1]
+parts        = magenta_base
+
+[emit h1=1]
+parts        = magenta_glyph
+
+[emit h2=1]
+parts        = teal_glyph
+
+[inputs]
+R            = 1
+G            = 1
+B            = 1
+
+[pedestal]
+center       = 12 8 1
+volume       = 3 3 3
+
+# target_parts now ALSO requires h1 (the puzzle-graph redesign §L3): the teal (h2)
+# route still lights the output base but no longer opens the door.
+[door]
+pos          = 17 8 1
+target_parts = output h1
+
+# ── SET DRESSING (L3) ────────────────────────────────────────────────────────
+# Meaning: YOU LOOK DOWN ON EIGHT WORLDS; THE COLOUR YOU MUST MAKE IS THE ONE THE
+# FLOOR CANNOT SHOW. FG = the mezzanine rail at your feet (the height reads);
+# MID = three lamp cords through the double height + the magenta drop; BG = the
+# RGB sensor panels on the input wall. Props stamp into Empty air only; no puzzle
+# cell is touched.
+
+# Lit slots in each source's own hue (§3.6 colour law). The kit's default lit slot
+# is a monitor over a 12 % backing and reads darker than the lamp-lit wall.
+[material h1_lit]
+preset      = neon
+fg          = #FF40FF
+bg          = #B02CB0
+
+[material h2_lit]
+preset      = neon
+fg          = #40D0D0
+bg          = #2A9090
+
+[material out_lit]
+preset      = neon
+fg          = #FFFFFF
+bg          = #A8B0C0
+
+# FG — the mezzanine made legible: rail + balusters on the open y=2 edge, posts
+# dropping to the hall floor. Dress mode = the existing z=5 slab stays the deck.
+# (Doc: at=10 1 5 facing=+y; in the code frame v runs along -f, so the 2-deep deck
+# is authored from its SOUTH row, at=10 2 5, to cover y=1..2 and not the wall.)
+[prop mezz]
+kind     = gallery
+mode     = dress
+mat.trim = metal
+mat.ink  = #C8D4E4
+at       = 10 2 5
+facing   = +y
+size     = 7 2 1
+
+# Upstairs — the analyser bank against the mezzanine's north wall, lit white when
+# the model answers.
+[prop mezz_racks]
+kind     = rack_row
+mat.body = metal
+at       = 11 1 6
+facing   = +y
+size     = 3 1 2
+power    = node:output
+
+# Lower hall, east wall — the hidden detectors' racks, recessed (body x=16, blade
+# slot x=15). Magenta for h1 (R+B), teal for h2. Dark until their node fires.
+[prop rack_h1a]
+kind     = rack
+mat.body = metal
+mat.lit  = h1_lit
+at       = 15 3 1
+facing   = -x
+size     = 1 2 2
+power    = node:h1
+
+[prop rack_h1b]
+kind     = rack
+mat.body = metal
+mat.lit  = h1_lit
+at       = 15 4 1
+facing   = -x
+size     = 1 2 2
+power    = node:h1
+
+[prop rack_h2a]
+kind     = rack
+mat.body = metal
+mat.lit  = h2_lit
+at       = 15 13 1
+facing   = -x
+size     = 1 2 2
+power    = node:h2
+
+[prop rack_h2b]
+kind     = rack
+mat.body = metal
+mat.lit  = h2_lit
+at       = 15 14 1
+facing   = -x
+size     = 1 2 2
+power    = node:h2
+
+# MID — the magenta beat's thread: a cord bundle falling through the double height
+# over the hall's centre, lit only when h1 fires. (The doc's holo prism cannot be
+# magenta — the hologram hue is fixed in the renderer.) Round 2: the cords alone
+# were two 1-px lines, so the payoff's MASS is now `magenta_bank` on the west wall.
+[prop magenta_drop]
+kind     = cable_drop
+at       = 6.5 7.5 7.9
+to       = 6.5 7.5 3.4
+strands  = 3
+power    = node:h1
+
+# BG — THE MAGENTA PAYOFF, WITH MASS (round 2). A bank of neon screens on the
+# west wall, above the notes and below the ceiling, facing the mezzanine. Each
+# screen is an R1 lit slot: Empty (a thin bezel) until h1 fires, then a solid
+# 4x3 magenta face in the true memory's own hue.
+[prop magenta_bank]
+kind     = wall_panel
+mode     = bank
+at       = 1 10 4
+facing   = +x
+size     = 4 1 3
+screen   = live
+mat.lit  = h1_lit
+power    = node:h1
+
+# MID — the three lamps hang from the ceiling on cords.
+[prop cord_r]
+kind     = lamp_pendant
+at       = 5.0 3.0 4.6
+light    = existing
+
+[prop cord_g]
+kind     = lamp_pendant
+at       = 5.0 8.0 4.6
+light    = existing
+
+[prop cord_b]
+kind     = lamp_pendant
+at       = 5.0 13.0 4.6
+light    = existing
+
+# BG — the RGB sensor panels on the input wall, one above each input node.
+[prop sense_r]
+kind     = wall_panel
+mode     = skin
+at       = 0 4 3
+facing   = +x
+size     = 3 1 2
+screen   = live
+mat.lit  = #FF4040
+
+[prop sense_g]
+kind     = wall_panel
+mode     = skin
+at       = 0 9 3
+facing   = +x
+size     = 3 1 2
+screen   = live
+mat.lit  = #40FF40
+
+[prop sense_b]
+kind     = wall_panel
+mode     = skin
+at       = 0 14 3
+facing   = +x
+size     = 3 1 2
+screen   = live
+mat.lit  = #4080FF
+
+# Floor cables under every z=2 pipe, lit in the pipe's colour when it carries.
+[prop wire_rh1]
+kind     = cable_run
+follow   = pipe:R->h1
+
+[prop wire_gh2]
+kind     = cable_run
+follow   = pipe:G->h2
+
+[prop wire_bh2]
+kind     = cable_run
+follow   = pipe:B->h2
+
+[prop wire_h1o]
+kind     = cable_run
+follow   = pipe:h1->output
+
+[prop wire_h2o]
+kind     = cable_run
+follow   = pipe:h2->output
+
+[player]
+# Spawn UPSTAIRS on the mezzanine. Round 2 (set-dressing review): the old landing
+# spawn (9,1,6) facing +y looked level across the double height straight into the
+# far south wall, so frame 1 was a flat blue scanline wall. There is no pitch, so
+# the vantage has to be carried by composition instead: the EAST end of the
+# walkway, looking west-south-west (yaw 390, between -x and +y) along the deck —
+# the railed walkway recedes on the left, the hall's pipe network drops away on
+# the right, and the west wall's magenta bank (dark until h1 fires) sits dead
+# centre. The snow test (re_render cold_levels_render_visible_snow_in_a_dump_frame)
+# reads this spawn and passes here.
+spawn        = 16 2 6
+facing       = 390
+
+# ── PLACARDS ──────────────────────────────────────────────────────────────────
+# Each `pos` IS the painted wall cell; `facing` is that face's outward normal.
+#   north wall y=0 → +y  ·  south wall y=15 → -y  ·  west wall x=0 → +x
+# R.C.'s log and FORM 12 move UP to the mezzanine's own north wall (the
+# "upstairs office" where the lab emptied out) — read at spawn. The unsigned
+# note moves to the LOWER north wall beside the stair foot, so it is the first
+# thing at eye level once the player reaches the ground.
+
+# R.C.'s bilingual log — the lab emptying out (canon text, held from 03.lvl).
+# Moved up to the mezzanine north wall (the spatial redesign §3 L3 "Notes").
+[note researcher pos=9,0,6 facing=+y]
+    R+B = morado, ¡por fin! magenta funciona — но Hoffmann говорит unit_07
+    "не должен" fire так easily. Esta vivo? maybe. tea cold. estamos solos.
+    Sato gone home. me too soon. dejo esto para el siguiente.  — R.C.
+
+# THE UNSIGNED NOTE — TWIST 1. Your handwriting, your ink, no memory of writing it.
+# This is the shard-3 beat: the name starts assembling out of your own hand.
+# Moved to the lower north wall beside the stair foot (the spatial redesign §3 L3).
+[note researcher pos=2,0,2 facing=+y]
+    don't trust the second hidden node when B is high. it remembers the wrong
+    room.  — A.
+    (this paper is yours. the ink is yours. you do not remember writing it.)
+
+# The duplicate handle. `{time}` is Tier-1 allowlisted and resolves; the tail.log
+# mtime is a literal tomorrow-date (real-world), not a probe read. `2026-06-18`
+# below is left UNCONVERTED on purpose: STORY_BIBLE §7 ("Future mtime") anchors
+# this exact string as the canonical real-machine-time device, not
+# fictional-clock text — do not "fix" it.
+[note system_log pos=0,8,2 facing=+x]
+    > [layer_01.warn] duplicate operator handle detected:
+    >   aleks_v previously logged session 0001 at 2052.03.14
+    >   aleks_v currently  logged session 0001 at 2071.06.15
+    >   resolving as: same operator. confidence 14.7%.
+    > tail.log  modified 2026-06-18 03:14
+    > (at {time}, your machine time. you should have been asleep.)
+
+# The level's ONE model_thought, carrying the ONE neuron-voice line
+# (CONTENT_PACK Part A · L3).
+[note model_thought pos=9,15,2 facing=-y]
+    (three bits. eight worlds. I contain more than I was shown, and one of the
+    eight is a room I remember wrongly. the ink on the wall is my handwriting.)
+    -- this hand is mine. I do not know it --
+
+# STEWARDSHIP CORPUS #2 — FORM 12, Stewardship Retention Schedule
+# (NORMATIVE_NOTES §2), abridged to the placard grid. No tokens.
+# Moved up to the mezzanine north wall, beside R.C.'s log (the spatial redesign §3 L3).
+[note researcher pos=10,0,6 facing=+y]
+    NAL CORP · LEGACY STEWARDSHIP DIVISION
+    FORM 12 - RETENTION SCHEDULE (incomplete processes)
+    class A  completed ......... erase after 30 days
+    class B  failed (exit != 0)  erase after audit
+    class C  did not exit ...... RETAIN INDEFINITELY (cannot be erased:
+             still running)
+    note  Class C cannot be collected while it holds a handle. The handle is
+          the operator. Do not detach the operator. Detaching an in-progress
+          class-C process is not erasure; it is abandonment, and abandonment
+          is logged against the Department.
+
+# STEWARDSHIP CORPUS #7 — FORM 03, Operator Eligibility (NORMATIVE_NOTES §7). Placed
+# HERE rather than L2: its 14.7% is the same false-precise number the duplicate
+# handle above reports, and the two placards are meant to be read together.
+[note researcher pos=0,12,2 facing=+x]
+    FORM 03 - OPERATOR ELIGIBILITY
+    eligible  any handle the asset recognizes.
+    note      the asset recognizes handles it has held before.
+              therefore the most eligible operator is the previous operator.
+              therefore the operator is, with confidence 14.7%, the same
+              operator.
+              this is not an error. eligibility was designed this way.

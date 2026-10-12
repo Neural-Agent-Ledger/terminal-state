@@ -1,0 +1,744 @@
+# TERMINAL STATE — levels/L4-the-angle.lvl
+#
+# L4 · "The Angle" — REBUILT to the 2026-09-23 (real-world) owner-approved spatial redesign
+# (the spatial redesign §3 L4) + the final puzzle graph
+# (the puzzle-graph redesign §L4). The room is now a long, tall,
+# colonnaded calibration RANGE instead of a plain 20x14 box, and the graph is
+# rebuilt so that BOTH stacked lines are load-bearing (see below).
+#
+# CAMPAIGN SLOT: manifest #4 · movement P2 "THE CALIBRATION WING"
+#                load ▅ (the first real demand)
+# IDENTITY: a long, tall calibration range with a colonnade. Two lines stacked
+# in the air read as one down the axis and split the moment you step into a
+# bay, and one bay holds a mirror that shows the range without you.
+#
+# ── MECHANIC (pure data — geometry + a free camera; no engine feature) ────────
+#   is_round   (IN=1, z=2, on-axis)   ──┐
+#   is_pointed (IN=1, z=2, off-axis)  ──┼─► tapered (T=2) ─► output ─► door
+#   has_loop   (IN=0, z=4, stacked over is_round) ──┘ (feeds tapered too, but held at 0)
+#
+# THE LOCK. `is_round` and `has_loop` share the SAME corridor centreline (y=5)
+# and run parallel along x, STACKED in z (live at z=2, dead at z=4). Looked at
+# straight down the corridor from the spawn camera they project onto the same
+# screen COLUMN and read as ONE line — you cannot tell which of the two
+# sources actually feeds the junction. STRAFE, and parallax splits the single
+# apparent line into two distinct runs at two heights; only then does colour
+# tell you which is alive.
+#
+# 2026-09-23 (real-world) GRAPH FIX (the puzzle-graph redesign §L4, owner-approved).
+# The shipped graph let `is_pointed` alone solve the level (`tapered` T=1), so
+# the stacked pair never had to be resolved — parallax was legible but
+# OPTIONAL. `tapered` is now T=2: BOTH `is_round` AND `is_pointed` must fire,
+# so the player must (a) find the live line among the stacked pair via
+# parallax, AND (b) wire the watcher's off-axis line too. `has_loop` stays a
+# free, harmless decoy — its pipe toggles and does nothing, its source held at
+# 0. `power_budget` 2→3 (three switches ON: the two live feeds + the home
+# stretch).
+#
+# SOLUTION (3 toggles): is_round->tapered, is_pointed->tapered, tapered->output.
+#   `has_loop->tapered` toggles freely and does nothing — its source is held at 0.
+#   Its pool reserve is NOOSE. The loop is not needed here. Not yet.
+#
+# READOUT (WORD_STORY §RESULT, canon): CURVE + TIP -> TEARDROP -> SHAPE
+# NAME SHARD 4: the boundary token `://` — "where one thing stops being another".
+#
+# ── AUTHORING NOTE: pools vs. the "I AM SEEN" reading ─────────────────────────
+# PUZZLE_CONCEPTS #1 describes the two pipes as carrying words that read `I AM SEEN`
+# head-on and split into `I AM` / `SEEN BY` off-axis. WORD_STORY §2 is the pool
+# dictionary of record for L4 and gives CURVE / TIP / LOOP / TEARDROP / SHAPE, and
+# WORD_STORY §RESULT pins the L4 readout phrase to those anchors. Pipe words come
+# from the source node's `pool` (W1 1.2) — there is no per-pipe word list — so
+# honouring BOTH would mean overwriting the canon readout. Resolution: the POOLS are
+# verbatim WORD_STORY, and the `I AM` / `SEEN BY` reading is carried by the placards
+# and by the geometry that performs the split. Recorded, not silently substituted.
+#
+# ── TOKEN DISCIPLINE (W1 allowlist) ───────────────────────────────────────────
+# No `{token}` appears in this file. FORM 22 carries none.
+#
+# ── SPACE (the spatial redesign §3 L4) ──────────────────────────────────────────────
+# 22x11x7 corridor, centreline y=5, walk z=1..5. A colonnade of 6 full-height
+# pillars (x=9,13,17 at y=2 and y=8) frames a narrow north bay (y=1), a wide
+# nave (y=3..7) and a south bay (y=9). The south bay's far wall (y=10, x=12..14)
+# carries a NOISY MIRROR (`range_mirror`, campaign `mirror_ramp` drives its live
+# clarity — 3 name-shards -> ~0.36 at this point in the campaign): the one
+# place you step aside to find "I AM" shows the range and not you. Four floor
+# stripes (x=5,9,13,17) turn depth into a readable scale for the parallax read.
+# `[room] ambient = solid` (D1 fix): the cyan `shell` wall material now
+# actually paints the perimeter and pillars, `reflective = false` so the cold
+# masonry stays masonry — only the decal'd mirror patch reflects.
+#
+# Verify:
+#   cargo run -q -p re_game -- --dump levels/L4-the-angle.lvl --ansi
+#   cargo run -q -p re_lvlcheck --bin lvlcheck -- levels/L4-the-angle.lvl
+
+[meta]
+name        = level-L4-the-angle
+title       = The Angle
+version     = 2
+spec_rev    = 2026-09-23
+prop_style  = range
+
+[room]
+size        = 22 11 7
+ambient     = solid
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05; raised 2026-09-23 per
+# the puzzle-graph redesign §L4). At most N pipes may be ON at the
+# same time; switching one ON at the cap is REFUSED (the pipe stays off and
+# nothing else changes), switching one OFF always frees a unit.
+# WHY 3, NOT 2: `tapered` is now threshold 2 — BOTH `is_round` and `is_pointed`
+# must feed it, plus `tapered->output` to carry the pulse home. That is the
+# true minimum (3 of 4 pipes); `has_loop->tapered` is the one spare, harmless
+# to try, and always dark.
+power_budget = 3
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# ── ESCALATION (manifest fog_far = 17.0) ──────────────────────────────────────
+# **The corruption ramp starts here**: `matrix = 0.10`, the first bleed. `steam = on`
+# is the WARM axis (STORY_BIBLE §7: steam = a lab that still runs, snow = cold /
+# forgetting) — PROGRESSION §2 L4(e) "warm steam returns faintly; the lab still runs
+# through the fog." fog_far holds at L3's 17.0: the room does not close further, it
+# just stops being clean. `glitch` stays 0 — pipes must stream the CLEAN pool here,
+# because reading the words is how the parallax split is confirmed.
+[effects]
+matrix      = 0.10
+steam       = on
+
+[palette]
+fog_color   = #0E1220
+# fog_near pushed out 2.5 -> 5.0 (the spatial redesign §3 L4 materials note): the
+# corridor's readable line span is 8-14 cells, and 2.5 fogged the near stripes
+# before parallax could read them.
+fog_near    = 5.0
+fog_far     = 17.0
+
+# ── COLOR-FORWARD palette ─────────────────────────────────────────────────────
+# A long, cold, colonnaded range. Cold cyan masonry so DEPTH reads crisply
+# (depth is the puzzle), the live wires hot amber / watcher pink, the dead
+# wire a cold grey-blue. Colour is the confirmation once parallax has done the
+# separating. `reflective = false` fixes invariant 7 (the spatial redesign §0.2 #7):
+# the range's cold masonry must stay masonry — only the mirror decal reflects.
+[material shell]
+fg          = #58C0DC
+bg          = #050A12
+recipe      = circuit scale=1.6
+reflective  = false
+surface     = wall_solid
+
+[material deck]
+fg          = #66748A
+bg          = #08101A
+recipe      = grain scale=3.0 speck=0.15
+surface     = floor
+
+[material roof]
+preset      = metal
+fg          = #2A3442
+bg          = #04060A
+surface     = ceiling
+
+[material live_trace]
+preset      = monitor
+fg          = #FFC24A
+bg          = #100A06
+surface     = wall_trace
+
+# THE NOISY MIRROR (the spatial redesign §2 motif 2, §3 L4, §6 risk 3/8). Bound to
+# the `wall_matrix` surface slot; the `[wall_decal]` below re-kinds the south
+# bay's far wall patch to `matrix` so only that patch shows it. Authored
+# `clarity = 0.5` is the file's own static default — the campaign's
+# `re_game::mirror_ramp` drives the LIVE clarity from shard progress while a
+# campaign level is loaded (L4 is early: ~3 shards -> clarity ~0.36, a mostly
+# noisy reflection).
+[material range_mirror]
+fg          = #C8D2FF
+bg          = #05060A
+reflective  = true
+clarity     = 0.5
+surface     = wall_matrix
+
+[wall_decal]
+surface     = matrix
+region      = (12,10,1)-(14,10,3)
+
+# Range stripes — floor-only zones that turn the corridor's depth into a
+# readable scale (the parallax split depends on depth being legible).
+[material range_stripe]
+fg          = #C8D8E8
+bg          = #08111E
+recipe      = brick aspect=1.0 mortar_w=0.12 grain=0.20
+
+[zone stripe_x5]
+region      = (5,1,0)-(5,9,0)
+material    = range_stripe
+scale       = none
+
+[zone stripe_x9]
+region      = (9,1,0)-(9,9,0)
+material    = range_stripe
+scale       = none
+
+[zone stripe_x13]
+region      = (13,1,0)-(13,9,0)
+material    = range_stripe
+scale       = none
+
+[zone stripe_x17]
+region      = (17,1,0)-(17,9,0)
+material    = range_stripe
+scale       = none
+
+# Hard raking key light down the axis (from behind the player, toward the far
+# wall), plus one warm lamp over the private (is_round) line only.
+[atmosphere]
+key_dir     = 0.9, 0.0, 0.4
+key_color   = #B8D8F0
+ambient     = 0.20
+
+[light]
+pos         = 13.0, 5.0, 3.2
+color       = #FFC24A
+radius      = 2.5
+intensity   = 0.8
+
+# ── Dense [cells] grid — the colonnade + the door notch ──────────────────────
+# 22 cols (x=0..21) x 11 rows (y=0..10) x 7 z-layers.
+# Pillars: full-height (z=1..5) at (9,2) (13,2) (17,2) (9,8) (13,8) (17,8).
+# Painted '/' cells are the pipe network at its z-layer (WallTrace air, above
+# the walking layer z=1, so collision — which probes floor(eye_z)=1 — never
+# sees them; the L1-first-pulse.lvl precedent for this technique). Node cells
+# themselves are left as plain air '.'; only the connecting runs are painted.
+# The door notch at (21,5) is carved open at z=1..3 (walk height) since
+# `[cells]` is authoritative and does not auto-open a doorway the way a plain
+# `[room] size` box does.
+[cells]
+size        = 22 11 7
+
+# z=0 — floor slab.
+######################
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+######################
+
+# z=1 — walking layer. Pillars only; the door notch opens the east wall at y=5.
+######################
+#....................#
+#........#...#...#...#
+#....................#
+#....................#
+#.....................
+#....................#
+#....................#
+#........#...#...#...#
+#....................#
+######################
+
+# z=2 — the node/pipe plane. is_pointed's north-bay run (y=1, x=7..11), its
+# drop down x=7 (y=1..5), the tapered->output home stretch (y=3-5, x=2-7), and
+# is_round's/has_loop's tail run into `tapered` (y=5, x=7..11).
+######################
+#....../////.........#
+#....../.#...#...#...#
+#.//////.............#
+#./...//.............#
+#....../////..........
+#....................#
+#....................#
+#........#...#...#...#
+#....................#
+######################
+
+# z=3 — has_loop's single transit cell, descending toward tapered.
+######################
+#....................#
+#........#...#...#...#
+#....................#
+#....................#
+#......../............
+#....................#
+#....................#
+#........#...#...#...#
+#....................#
+######################
+
+# z=4 — has_loop's dead line, STACKED directly over is_round's z=2 run.
+######################
+#....................#
+#........#...#...#...#
+#....................#
+#....................#
+#........///.........#
+#....................#
+#....................#
+#........#...#...#...#
+#....................#
+######################
+
+# z=5 — clear headroom above the network; pillars continue to their crown.
+######################
+#....................#
+#........#...#...#...#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#........#...#...#...#
+#....................#
+######################
+
+# z=6 — ceiling slab.
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+
+# ── NODES ─────────────────────────────────────────────────────────────────────
+# Pools VERBATIM from WORD_STORY §2 (L4 rows), anchor word first.
+
+# The output at the far -x end of the corridor, on the centreline.
+[node output]
+pos          = 2,5,2
+glyph        = O
+pool         = SHAPE GLYPH FORM SYNTH FIGURE
+pool_alt     = форма 形 forma forme Form
+color        = #FFFFFF
+is_output    = yes
+threshold    = 1
+
+# THE JUNCTION. Now threshold 2: BOTH a live feed AND the watcher's feed must
+# reach it — the stacked-pair resolve is no longer optional (spec
+# the puzzle-graph redesign, dated 2026-09-23 (real-world), §L4).
+[node tapered]
+pos          = 6,5,2
+glyph        = D
+pool         = TEARDROP NIB SHARP-CURVE COMET-TAIL FANG-OF-LIGHT FLAME-TIP
+pool_alt     = 涙 каплевидный goutte Tropfen lágrima
+color        = #FFC24A
+threshold    = 2
+
+# THE PRIVATE LINE — live, LOW (z=2), warm. Head-on it is indistinguishable from
+# the dead line stacked above it.
+[node is_round]
+pos          = 12,5,2
+glyph        = C
+pool         = CURVE ARC SPHERE DOME BOWL DROP ORB BUBBLE
+pool_alt     = 円 弧 круг шар courbe Kugel
+color        = #FFC24A
+is_input     = yes
+
+# THE DEAD LINE — held at 0, HIGH (z=4), cold, directly above `is_round` on the
+# same (x,y) column. NOOSE sits in its pool: a closed loop, offered early, not yet
+# needed. Toggling its pipe is legal and useless.
+[node has_loop]
+pos          = 12,5,4
+glyph        = L
+pool         = LOOP RING CIRCUIT KNOT NOOSE CLOSED EYELET HOLE
+pool_alt     = петля 環 輪 boucle Schlinge
+color        = #54627A
+is_input     = yes
+
+# THE WATCHER'S LINE — live, off the centreline so it is never ambiguous, and
+# now MANDATORY: the taper will not form without it.
+[node is_pointed]
+pos          = 12,1,2
+glyph        = T
+pool         = TIP SPIKE CORNER WEDGE BLADE FANG THORN APEX
+pool_alt     = 尖 角 острый pointe Spitze
+color        = #FFA0C0
+is_input     = yes
+
+# ── PIPES (all OFF at load) ───────────────────────────────────────────────────
+
+# The PRIVATE feed: dead straight along the centreline at z=2.
+[pipe is_round->tapered]
+state        = OFF
+path         = (12,5,2) (6,5,2)
+switch_at    = (10,5,2)
+density      = 0.7
+color        = #FFC24A
+
+# The DEAD feed: runs parallel at z=4 — stacked directly over the live line — then
+# drops to the junction. The descent puts its switch on a reachable z=2 cell, so the
+# player CAN toggle it and discover that nothing happens. Its switch cell (9,5,2)
+# overlaps `is_round`'s straight run — legal (switch cells stay unique, path
+# cells may be shared) and it is exactly where "two lines read as one" physically
+# meet (the spatial redesign's own precedent for this overlap).
+[pipe has_loop->tapered]
+state        = OFF
+path         = (12,5,4) (9,5,4) (9,5,2) (6,5,2)
+switch_at    = (9,5,2)
+density      = 0.6
+color        = #54627A
+
+# The WATCHER'S feed: off-axis, unmistakable, now REQUIRED alongside is_round.
+[pipe is_pointed->tapered]
+state        = OFF
+path         = (12,1,2) (7,1,2) (7,5,2) (6,5,2)
+switch_at    = (10,1,2)
+density      = 0.7
+color        = #FFA0C0
+
+# The home stretch. Switch moved to (6,4,2) — one cell north of the `tapered`
+# node, ON the expanded path between its (6,5,2) and (6,3,2) waypoints — since a
+# switch has never shipped ON a node's own cell (the puzzle-graph redesign, dated
+# 2026-09-23 (real-world), §L4 flags this; verified reachable and on-path by
+# `re_lvlcheck` + walkability below).
+[pipe tapered->output]
+state        = OFF
+path         = (6,5,2) (6,3,2) (2,3,2) (2,5,2)
+switch_at    = (6,4,2)
+density      = 0.7
+color        = #FFC24A
+
+# ── EMIT: the edge. A contour that has a here and a not-here. ─────────────────
+# Round 3 (design pass 2, figures): the edge is a thin band (0.4 of its storey) just
+# over the horizon with a pale top, over a full-height base with a pale rim — the
+# diagonal reads as a drawn line of light on a plinth rather than three columns.
+[part edge_glyph]
+size         = 3 3 1
+mask         =
+..#
+.#.
+#..
+color        = #FFC24A
+height       = 0.4
+top          = #FFECC0
+top_from     = 0.5
+offset       = 0 0 1
+
+[part edge_base]
+size         = 3 3 1
+mask         =
+###
+...
+...
+color        = #58C0DC
+top          = #C8F0FF
+top_from     = 0.75
+offset       = 0 0 0
+
+[emit output=1]
+parts        = edge_glyph edge_base
+
+[inputs]
+is_round     = 1
+is_pointed   = 1
+has_loop     = 0
+
+# SET DRESSING (reveal-size fix): at the original
+# center (4,5,1) the reward rendered at only ~6% of the frame width from spawn
+# (20,5,1) — 16 cells of range between the player and the payoff. Moved to
+# (13,5,1): one cell east of the is_round/is_pointed/has_loop cluster (x=12),
+# still squarely inside the network's own footprint (not a stray glow off in
+# empty corridor), and clear of every pipe path, note and pillar at that x/y
+# (verified by hand against every `[pipe] path` and prop position). x=12 itself
+# is NOT safe — the figure's diagonal middle cell always lands on (cx,5,cz+1),
+# which at cx=12 collides with the is_round/has_loop node cell (12,5,2) and
+# binds the mask short. From spawn this renders at ~32% of the frame width,
+# flanked by the two recessed `range_rack` props at x=16 either side.
+[pedestal]
+center       = 13 5 1
+volume       = 3 3 2
+
+[door]
+pos          = 21 5 1
+target_parts = output
+
+[player]
+# At the +x mouth of the range, one cell inside the door, looking -x STRAIGHT
+# DOWN the colonnade so the two stacked pipe-lines overlap into one apparent
+# line, framed by the pillars like a sight. The player must strafe into a bay
+# to split them before the level can be read at all.
+spawn        = 20 5 1
+facing       = -x
+
+# ── PLACARDS ──────────────────────────────────────────────────────────────────
+# Each `pos` IS the painted wall cell; `facing` is that face's outward normal.
+#   north wall y=0 → +y  ·  south wall y=10 → -y  ·  west wall x=0 → +x
+
+# K.H. — curvature decomposition (canon L4 researcher voice, STORY_BIBLE §5 L4).
+[note researcher pos=8,0,2 facing=+y]
+    Curvature decomposition works. Round plus pointed gives us a taper the
+    classifier has never been shown, and it names it on the first pass. Printer
+    still broken, so this is by hand. Stop dating notes by hand, A. — K.
+
+# A.L. — WHY the paper exists at all. The bridge to FORM 22 on the far wall.
+[note researcher pos=15,0,2 facing=+y]
+    I write on paper because the screen logs get wiped every Friday and someone
+    has to remember what we did. K. thinks that is sentimental. K. has not tried
+    to reconstruct a week from nothing.  — A.L.
+
+# The parallax beat, stated as instrument calibration — now in the mirror bay.
+[note system_log pos=11,10,2 facing=-y]
+    > parallax calibration. displayed wiring is view-dependent.
+    > two sources on the centreline; one is live, one is inert.
+    > resolve by translation, not by label.
+    > operator legibility peaks at observation point. noted.
+
+# The level's ONE model_thought, carrying the ONE neuron-voice line
+# (CONTENT_PACK Part A · L4). Head-on it is one sentence; from the side it is two.
+# West end wall behind the output — the far end of the axis, read on arrival.
+[note model_thought pos=0,5,2 facing=+x]
+    (from the door the two lines are one line and the one line says I AM SEEN.
+    step sideways and it comes apart into I AM and SEEN BY. before edges I had
+    only color. after edges I had a place where I end.)
+    -- here is where I end --
+
+# STEWARDSHIP CORPUS #8 — FORM 22, Screen-Log Erasure Schedule (NORMATIVE_NOTES §8),
+# abridged to the placard grid. Reads as the reply to A.L.'s note. No tokens.
+[note researcher pos=0,2,2 facing=+x]
+    NAL CORP · LEGACY STEWARDSHIP DIVISION
+    FORM 22 - SCREEN-LOG ERASURE SCHEDULE
+    on-screen logs are erased every Friday at 23:59 facility time.
+    rationale  the facility was certified for a two-year project. it has run
+               nineteen. retaining nineteen years of logs would imply the
+               project did not end. the project ended. erase the logs.
+               (paper notes are not screen logs and are not covered by this
+               form. someone has been writing on paper.)
+
+# ── SET DRESSING (L4) ────────────────────────────────────────────────────────
+# Meaning: A RANGE BUILT FOR LOOKING, AND A GALLERY THAT SPLITS THE STACKED LINES
+# VERTICALLY. The colonnade gets bases, capitals and flutes in its own stone (the
+# pillars wore the wall circuit and read as slabs); two half-bay columns double
+# its rhythm on the north side. Three cameras watch the spawn. The south gallery lifts you
+# to the dead z=4 line's height. On the floor, the TRUTH: each line's cable lights
+# only when its SOURCE is alive, so wiring the stacked decoy lights nothing under it.
+# No puzzle cell is touched; props stamp into Empty air or re-skin plain geometry.
+
+# The colonnade's own stone: pale limestone shafts (a different recipe family from the
+# cyan circuit shell, §5 R2) with steel bases and capitals.
+[material col_stone]
+fg          = #8C9AA8
+bg          = #10141A
+recipe      = grain scale=2.0 speck=0.10
+
+[material col_cap]
+fg          = #C8D8E8
+bg          = #1A222C
+recipe      = brick aspect=4.0 mortar_w=0.10 grain=0.10
+
+# FG/MID — the colonnade: the six authored pillars re-skinned, plus two half-bay columns
+# on the NORTH side (x=11,15) that double its rhythm there. The south side keeps its
+# wide bays open: that is the gallery side, and the deck must see into the nave.
+[prop pillar_9_2]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = col_cap
+at       = 9 2 1
+size     = 1 1 5
+ribs     = yes
+
+[prop pillar_13_2]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = col_cap
+at       = 13 2 1
+size     = 1 1 5
+ribs     = yes
+
+[prop pillar_17_2]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = col_cap
+at       = 17 2 1
+size     = 1 1 5
+ribs     = yes
+
+[prop pillar_9_8]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = col_cap
+at       = 9 8 1
+size     = 1 1 5
+ribs     = yes
+
+[prop pillar_13_8]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = col_cap
+at       = 13 8 1
+size     = 1 1 5
+ribs     = yes
+
+[prop pillar_17_8]
+kind     = column
+mode     = skin
+mat.body = col_stone
+mat.trim = col_cap
+at       = 17 8 1
+size     = 1 1 5
+ribs     = yes
+
+[prop column_11_2]
+kind     = column
+mat.body = col_stone
+mat.trim = col_cap
+at       = 11 2 1
+size     = 1 1 5
+ribs     = yes
+
+[prop column_15_2]
+kind     = column
+mat.body = col_stone
+mat.trim = col_cap
+at       = 15 2 1
+size     = 1 1 5
+ribs     = yes
+
+# VERTICAL — the south gallery: a catwalk deck at z=3 (stand z=4, eye 4.5 — the dead
+# has_loop line's own height) slung between the south colonnade's pillars (13,8) and
+# (17,8), x=14..16 on y=8, reached by a 3-tread stair along the bay's south wall,
+# landing at (16,9,3). From the deck, looking north-west through the colonnade's wide
+# bay, the stacked pair splits VERTICALLY: has_loop's slab at eye level, is_round's
+# below it. The deck keeps OFF y=9 west of the landing on purpose: (12..14,9,1..3) is
+# the range mirror's keep-out (the mirror decal (12,10,1)-(14,10,3) + one cell out), and
+# a deck cell over (11,9) moves the system_log placard at (11,10,2) onto the mirror.
+# Both deck ends butt a pillar, so it needs no posts (`posts = none`): the south bay
+# floor stays fully walkable. (W runs along the viewer's right, which is -x for facing
+# -y, so `at` is the EAST end.)
+[prop gallery_s]
+kind     = gallery
+at       = 16 8 3
+facing   = -y
+size     = 3 1 1
+posts    = none
+stair    = 19 9 1 -x 3
+
+# A camera over the mirror bay: it watches you look into the mirror.
+[prop cam_mirror]
+kind     = cctv
+at       = 11 9 4
+look     = 13.5 9.5 1.6
+# Overhead — three cameras in the top corners, all trained on the spawn cell. Their
+# tallies burn red until the door opens.
+[prop cam_nw]
+kind     = cctv
+at       = 1 1 5
+look     = 20.5 5.5 1.6
+
+[prop cam_ne]
+kind     = cctv
+at       = 20 1 5
+look     = 20.5 5.5 1.6
+
+[prop cam_sw]
+kind     = cctv
+at       = 1 9 5
+look     = 20.5 5.5 1.6
+
+# BG — range targets hanging on the west end wall, either side of the output.
+[prop target_s]
+kind     = furniture_trace
+shape    = frame
+at       = 1.05 7.1 1.3
+facing   = +x
+size     = 1.8 0.1 1.5
+
+[prop target_n]
+kind     = furniture_trace
+shape    = frame
+at       = 1.05 0.6 1.4
+facing   = +x
+size     = 0.8 0.1 1.1
+
+# The power budget over the targets, on the west end wall: three amber lamps, one per
+# pipe drawn. Wire the stacked decoy and a lamp goes to a line that carries nothing.
+[material budget_lit]
+preset      = neon
+fg          = #FFB040
+bg          = #D08418
+
+[prop budget]
+kind     = budget_bank
+mat.lit  = budget_lit
+at       = 1 9 3
+facing   = +x
+size     = 3 1 1
+
+# East wall behind the spawn — the observation screen that watches the range.
+[prop score]
+kind     = wall_panel
+mode     = skin
+at       = 21 1 3
+facing   = -x
+size     = 3 1 2
+face     = watcher
+
+# Round 3 (design pass 2, fix 6 — "ON changes 1.8 % of the spawn frame (one brown
+# box), so power still does not teach here"): two recessed racks set into the gaps of
+# the colonnade at x=16, one per side, facing into the range 4 cells ahead of the spawn
+# and either side of its line of sight. Their blades light amber — `tapered`'s hue, the
+# home-stretch wire — the moment the edge reaches the output: the first thing the
+# player sees is two dark machines the solve will wake. Off the corridor floor (y=1..2
+# and y=8..9, between the pillars), clear of every wire and of the x=12..14 mirror.
+[material home_lit]
+preset      = neon
+fg          = #FFC24A
+bg          = #8A6010
+
+[prop range_rack_n]
+kind     = rack
+mat.body = metal
+mat.lit  = home_lit
+at       = 16 2 1
+facing   = +y
+size     = 1 2 2
+power    = pipe:tapered->output
+
+[prop range_rack_s]
+kind     = rack
+mat.body = metal
+mat.lit  = home_lit
+at       = 16 8 1
+facing   = -y
+size     = 1 2 2
+power    = pipe:tapered->output
+
+[prop warm_cord]
+kind     = lamp_pendant
+at       = 13.0 5.0 3.2
+light    = existing
+
+# Floor — the lines as they really are. The live feeds light with their pipes; the
+# stacked decoy's cable is bound to its SOURCE (held at 0), so it never lights. Two
+# cables under the one apparent line: the attentive player counts two.
+[prop cable_round]
+kind     = cable_run
+follow   = pipe:is_round->tapered
+
+[prop cable_loop]
+kind     = cable_run
+follow   = pipe:has_loop->tapered
+bundle   = 2
+power    = node:has_loop
+
+[prop cable_pointed]
+kind     = cable_run
+follow   = pipe:is_pointed->tapered
+
+[prop cable_home]
+kind     = cable_run
+follow   = pipe:tapered->output

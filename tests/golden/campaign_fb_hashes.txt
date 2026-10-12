@@ -1,0 +1,18 @@
+# Golden framebuffer hashes — CAMPAIGN corpus. DO NOT edit by hand.
+# Regenerate with: TS_BLESS_GOLDEN=1 cargo test -p terminal_state --test golden_campaign
+# Split 2026-09-28 from the single tests/golden/fb_hashes.txt. Every hash below
+# is BYTE-IDENTICAL to its entry in the pre-split store — this was a corpus
+# split, not a re-render.
+# See tests/golden/README.md for the split rationale and the engine sibling.
+# Format: key = <shade-sha256> <geom-sha256>, two independent digests per level.
+#   shade = row-major {glyph,fg,bg} cells (12 bytes/cell, u32 LE) — the LOOK.
+#   geom  = row-major {depth,side,surface,material} (11 bytes/cell) — the CAST.
+# A mismatch in shade alone is a shader change; a mismatch in both is a
+# raycaster/map/camera change. The split is what makes a red run diagnosable.
+L1-first-pulse = 59b909c3d1d43903fe55445e37fbdf1ad84d9dc30fe70f6f3c8287eb23e10aeb 7625d9152571323f79b468bae925be97e06fcc5c9b0ad86b09bc62ad01b8e027
+L10-lying-door = d9af92d57e8eba1c86ac6ef6da5fd70a30ebc39c689395474bd507b0fd60b5ef 8055f92d41d31a12a31cbdb293ca35f8593f16a66c05929bbe81f55ad91e5111
+L11-inner-circuit = 3789403cf94b9085bcc269e9e3e07043e05dc41cdb9d6437aafd8e7c688f74e0 3643964a9c1ccf5b4ea92c09dc28862f89c0c6a805cd87b202c3d714e7d07173
+L12-closing = 972d35a068206ddcb85d014732e4c5cc31359eb12da6430d9dd77419152f4234 7f9b5096c92d72d01e03a7c60890c2939ca3e4fc5f728451a5b8439b0ab959f7
+L5-soft-footstep = 74a425a484c438ca39f0c1c90adb6a0ff143fe3160f99c863a196eb475de7ce1 e14560399b44d741517c4b8ca4a5e32593adbdec0f0699e9ab2ba2b56498601c
+L8-cold-room = 72464fed80685d6f77d0d8862e8c8f6b517a59dc79c1c6058b7bb391c7413949 fe4de82418dbf54efe7e1b5ac4ca2a465d3ef5613523d82aa2d87bda24660852
+L9-stereopsis = 813202a46a0ff41b0103e08acaf7962b08ed7dcb0369f05cd0a566338577471e f306ef62247156095ebbd9febf8fbd5be0ae30dada11dcbe003dfcc250dcb8a4

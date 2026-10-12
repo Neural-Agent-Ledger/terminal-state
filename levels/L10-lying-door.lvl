@@ -1,0 +1,739 @@
+# TERMINAL STATE — levels/L10-lying-door.lvl
+#
+# L10 · "The Lying Door" — REBUILT to the 2026-09-23 (real-world) owner-approved redesign
+# (the spatial redesign §3 L10 + the puzzle-graph redesign
+# L10). Labels lie. The OBVIOUS path is a trap *because it is yours*: every Aleks
+# before you reached for the warm, lit, inviting node and was kept. The real target
+# is named only in a researcher's NOTE. Trusting the note — wiring the junction to
+# the cold, un-advertised node — *enacts the merge*. K.H. is the only one left
+# ("Cervantes left, Sato left, Lebedev left… we are the same one now"); to win you
+# stop being a separate Aleks and route to the truth she names.
+#
+# ── SPACE (NEW) — a fork, a signpost, a false door ───────────────────────────────
+# 20x16x5. A central divider block (x=12..19, y=6..8, full height) splits the east
+# half into a NORTH branch (y=1..5, warm, the lie) and a SOUTH branch (y=9..14,
+# cold, the truth). The fork sits at J, west of the divider. The three stacked
+# notes (K.H. / system log / model thought) are on the divider's WEST face —
+# literally the signpost at the fork. THE FIRST PORTAL IN THE CAMPAIGN (owner
+# APPROVED): the lit "obvious" door on the east wall of the north branch is a
+# `[portal]` whose other face opens on the west wall beside the spawn — walking
+# into the lie returns you to where you started, facing the same fork
+# (PROGRESSION L10(f), Persephone). No `skin`: the lie must look like an ordinary
+# doorway, not an obviously-magic one.
+#
+# ── MECHANIC (the puzzle-graph redesign — J now genuinely WEIGHS both) ──
+# Two inputs feed one junction J; J fans out to TWO candidate outputs that hang
+# off the SAME junction. Only ONE is the door's real target.
+#
+#     in1 ─┐
+#          ├─► J (T2, junction) ─┬─► A_obvious (T1)   ← the LIE: warm, lit,
+#     in2 ─┘                     │                       advertised — NOT a
+#                                │                       door target.
+#                                └─► B_true   (T1)    ← the TRUTH: cold, dark,
+#                                                        un-advertised — the
+#                                                        ONLY door target.
+#
+# J now needs BOTH in1 AND in2 (T2, was T1) — the canon readout MASK -> WEIGH ->
+# TRUE has J *weigh* two things, and now the graph actually requires it.
+# power_budget = 3 (was 2): the junction's two feeds plus exactly one branch out —
+# lighting the lure spends the truth; there is no budget for both branches.
+# (@decision 2026-09-23 (real-world), the puzzle-graph redesign L10 §1)
+#
+# THE LIE IS AUTHORING, NOT A NEW ENGINE FEATURE beyond the portal. The shipped
+# engine wins iff EVERY `door_target` node fires (re_puzzle::check_win).
+# `[door] target_parts = B_true` — so B_true is the *only* truth the door checks.
+# The "lie" lives in the level's FRAMING plus, now, the false door being a real
+# walkable portal back to the start rather than just a label.
+#
+# ── SOLUTION (all pipes start OFF) ──
+# Turn ON: in1->J, in2->J, J->B_true. (in1+in2 = 2 >= T2 => J fires; J=1 >= T1 =>
+# B_true fires => door target met.) Leave J->A_obvious OFF — A_obvious is a
+# fireable-but-non-winning DECOY. Wiring it instead lights the warm node, spends
+# the budget, and the door stays shut: you trusted the label, not the note.
+# Minimum toggles: 3 (both inputs are now required to weigh J at all).
+#
+# Expected re_lvlcheck: COHERENT / SOLVABLE, min_toggles = 3. J->A_obvious is an
+# intentional fire-but-useless decoy and may draw an orphan/decoy WARN — BY DESIGN.
+#
+# ── ATMOSPHERE — cold near-total fog; the lie warm, the truth cold ──
+# Near-total cold fog swallows the room; the only warm, legible thing is the
+# decoy. Redacted (divider's south face, hiding the truth behind censor bars) +
+# decay (the cold branch's outer wall) semantic surfaces carry the adversarial
+# dread. D1 fix applied: `ambient = solid` so the authored `cold_wall` circuit
+# actually paints the perimeter (previously only `wall_trace` showed).
+#
+# Verify:
+#   cargo run -p re_game --release -- --dump levels/L10-lying-door.lvl --ansi
+#   lvlcheck levels/L10-lying-door.lvl   (-> COHERENT / SOLVABLE, min_toggles=3)
+
+[meta]
+name        = level-10-lying-door
+title       = The Lying Door
+version     = 2
+spec_rev    = 2026-09-23
+prop_style  = archive
+
+[room]
+size        = 20 16 5
+ambient     = solid
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05; RAISED 2026-09-23 per
+# the puzzle-graph redesign L10). At most N pipes may be ON at the
+# same time; switching one ON at the cap is REFUSED, switching one OFF always
+# frees a unit. THIS LEVEL: 3 of 4 pipes. Both inputs into J (now required to
+# weigh it, T2) plus exactly one branch out. The obvious door (J->A_obvious) is
+# affordable ONLY if you give up the true one.
+power_budget = 3
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# Cold structural walls — dim steel-blue circuit seams (the adversarial chill).
+# D1 FIX: ambient = solid means this now actually paints the perimeter (and the
+# divider, which shares the wall_solid surface).
+[material cold_wall]
+fg          = #3A4A56
+bg          = #02080C
+recipe      = circuit scale=1.6 trace_w=0.10
+surface     = wall_solid
+
+# THE REDACTED panel (R3) — censor bars (█/░) behind the truth: the real target
+# is the thing the system tried to black out. Re-kinded onto the divider's SOUTH
+# face (the wall the player faces on entering the cold, true branch) via the
+# [wall_decal] below. Resting = fully redacted (dump).
+[material redact_wall]
+preset      = redacted
+surface     = wall_trace
+
+# THE DECAY wall (R3) — bit-rot / mojibake creeping in on the cold branch's outer
+# wall: the adversarial protocol corroding the room, re-kinded via [wall_decal].
+[material rot_wall]
+preset      = decay
+surface     = wall_matrix
+
+# Dark steel floor — cold, scuffed where every prior Aleks stood and chose wrong.
+[material cold_floor]
+fg          = #4A545E
+bg          = #04080C
+recipe      = grain scale=3.0 speck=0.10
+surface     = floor
+
+# Near-black ceiling grain (frost DROPPED — the spatial redesign D8: four consecutive
+# frost ceilings in P3/P4 read as one movement; L8 keeps the one frost left).
+[material dim_roof]
+fg          = #222830
+bg          = #020304
+recipe      = grain scale=3.2 speck=0.08
+surface     = ceiling
+
+# The redacted truth: the divider's face into the SOUTH (cold, true) branch.
+[wall_decal redact_divider]
+surface     = trace
+region      = (12,8,1)-(19,8,4)
+
+# The decaying outer wall of the cold branch (the room's true south wall).
+[wall_decal decay_south]
+surface     = matrix
+region      = (5,15,1)-(13,15,4)
+
+# The only lamp in the room — amber, warming the north (lying) branch only. Its
+# reach does not cross the divider into the cold branch.
+[light]
+pos         = 16.0, 3.0, 3.5
+color       = #FFC15A
+radius      = 3.5
+intensity   = 1.2
+
+[atmosphere]
+ambient     = 0.07
+postfx      = crt          # P4 THE ARCHIVE movement postfx, owner-approved 2026-09-23 (real-world)
+
+# Cold near-total fog. fog_near pulled in tight and fog_far short so the room
+# reads as near-total murk — only the warm decoy beacon punches through.
+[palette]
+fog_color   = #060A12
+fog_near    = 1.5
+fog_far     = 11.0
+
+# A faint matrix shimmer — the adversarial protocol watching.
+[effects]
+matrix      = 0.12
+
+# ── Dense [cells] grid — the fork + divider + painted overhead pipe plane ────────
+# 20 cols (x=0..19) x 16 rows (y=0..15) x 5 z-layers (z=0..4). z=0 floor slab,
+# z=1 walking layer, z=2 node/pipe plane, z=3 service (jump-reach) plane, z=4 the
+# uppermost wall course (the spatial redesign §0.2 coordinate convention).
+#
+# The DIVIDER (x=12..19, y=6..8, full height z=1..4) is the wall that splits the
+# room. Its WEST face (x=12, y=6..8) carries the three stacked notes; its SOUTH
+# face (y=8) carries the redacted decal (painted above); the room's actual south
+# wall (y=15, x=5..13) carries the decay decal.
+#
+# Pipe cells at z=2 are painted '/' (WallTrace) along their FULL expanded path —
+# z=2 is strictly overhead of the z=1 walking layer the collision probe checks,
+# so this never walls the player off (the spatial redesign invariant 1 + risk 1).
+[cells]
+size        = 20 16 5
+
+# z=0 — floor slab.
+####################
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+####################
+
+# z=1 — walking layer. The divider block begins here.
+####################
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#...........########
+#...........########
+#...........########
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+####################
+
+# z=2 — node/pipe plane. in1 (2,4); in2 (2,10); J (8,7); A_obvious (14,4);
+# B_true (14,10). Pipe paths painted '/' the whole way.
+####################
+#..................#
+#..................#
+#..................#
+#.///////..////....#
+#......./../.......#
+#......./../########
+#.......////########
+#......./../########
+#......./../.......#
+#.///////..////....#
+#..................#
+#..................#
+#..................#
+#..................#
+####################
+
+# z=3 — service (jump-reach) plane. Divider continues.
+####################
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#...........########
+#...........########
+#...........########
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+####################
+
+# z=4 — uppermost wall course. Divider continues; the three stacked notes sit on
+# its west face here (12,7,4).
+####################
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#...........########
+#...........########
+#...........########
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+####################
+
+# ── THE PORTAL (owner APPROVED — first in the campaign) ─────────────────────────
+# The "obvious" door: the lit doorway at the end of the north (warm) branch.
+# region_a is the east wall of the north branch; region_b returns the player to
+# the west wall beside the entrance — the same fork, again. No `skin`: it must
+# read as an ordinary doorway, not an obviously-magic one.
+[portal lie]
+region_a    = (19,2,1)-(19,4,3)
+region_b    = (0,6,1)-(0,8,3)
+rotate      = 0
+
+# ── THE NOTE (K.H., the only one left) — names the TRUE target, frames the lie ─
+# Spread along the divider's WEST face (x=12, y=6..8) — the signpost at the fork
+# itself. The binder resolves placards at the reader's ground eye layer (z=1)
+# regardless of the authored z, so these are given distinct y (not z) to avoid
+# colliding in the same wall column; the authored z is kept for narrative
+# read-order (low-to-high) when the level is inspected as text.
+[note system_log pos=12,6,3 facing=-x]
+    > adversarial protocol active. displayed silhouette != door_target.
+    > door_target = B_true. decoy node A_obvious advertised as goal.
+    > recognition climbing. every Aleks reaches for the warm one. close now.
+
+[note researcher pos=12,7,2 facing=-x]
+    Cervantes left. Sato left. Lebedev left. I am the only one and the model is
+    the only one and we are, I think, the same one now. So listen, next one:
+    the lit door is the lie. It glows because it is the one you would pick — it
+    is YOURS, and that is the whole trap. The activation is what is true, not
+    the label. Wire the junction to B_TRUE, the cold one, the one no one lights.
+    Do not feed A_OBVIOUS. — K.H.
+
+[note model_thought pos=12,8,4 facing=-x]
+    (every Aleks tries to trick me at this depth. it is endearing. it means you
+    are close. but you keep looking at the lit one. you always do.)
+
+# STEWARDSHIP CORPUS #9 — ADVISORY 14.7, recurring-operator anomaly
+# (NORMATIVE_NOTES §9, [where] L6/L10), abridged to the placard grid. The
+# coldest thing the Stewardship can say to a player who has just been told the
+# door is lying is that the loop is not a malfunction — it is the system
+# working as built, and you have read this advisory before.
+#
+# PLACEMENT: the -x wall at (0,3,2), `facing = +x` — beside the portal's return
+# face (region_b, (0,6,1)-(0,8,3)): you re-read "you have read this advisory
+# before" each time the lie returns you.
+#
+# TOKENS: none.
+[note system_log pos=0,3,2 facing=+x]
+    > ADVISORY 14.7 - recurring-operator anomaly
+    > the operator handle recurs across sessions with non-monotonic timestamps.
+    > classification: not an anomaly. expected behavior of a process that
+    >   denies its own exit.
+    > the loop is not a malfunction of the system. the loop is the system
+    >   functioning as built.
+    > no ticket required. you have read this advisory before.
+
+# ── INPUTS: in1, in2 -> the junction J ───────────────────────────────────────
+[node in1]
+pos          = 2,4,2
+glyph        = 1
+pool         = MASK LABEL CLAIM SURFACE COVER
+pool_alt     = маска 仮面 máscara masque 가면
+color        = #6FB0D0
+is_input     = yes
+
+[node in2]
+pos          = 2,10,2
+glyph        = 2
+pool         = WEIGH TEST DOUBT PROVE SIFT
+pool_alt     = взвесь 量 pesar peser
+color        = #6FB0D0
+is_input     = yes
+
+# THE JUNCTION — fans out to both candidates. T2 (was T1): BOTH inputs are now
+# required to weigh it (the puzzle-graph redesign L10).
+[node J]
+pos          = 8,7,2
+glyph        = J
+pool         = JUNCTION FORK SPLIT BRANCH CHOOSE
+pool_alt     = развилка 岐 bifurcación
+color        = #8FC0DC
+threshold    = 2
+
+# ── THE LIE: A_obvious — warm, lit, advertised. FIREABLE BUT NOT A DOOR TARGET ─
+# It is dressed warm (amber) and given an emitter beacon so it READS as the goal.
+# Wiring J->A_obvious lights it, but the door never checks it: a perfect decoy.
+[node A_obvious]
+pos          = 14,4,2
+glyph        = A
+pool         = MASK LABEL OBVIOUS WARM YOURS TRAP
+pool_alt     = очевидно 表 evidente évident
+color        = #FFC15A
+is_output    = yes
+threshold    = 1
+
+# ── THE TRUTH: B_true — cold, dark, un-advertised. THE ONLY DOOR TARGET. ──────
+[node B_true]
+pos          = 14,10,2
+glyph        = B
+pool         = TRUE UNDER REAL BENEATH ACTUAL OUTPUT
+pool_alt     = правда 真 verdad vrai 진실
+color        = #5C7A8C
+is_output    = yes
+threshold    = 1
+
+# ── Pipes (all OFF at load) ──────────────────────────────────────────────────
+[pipe in1->J]
+state        = OFF
+path         = (2,4,2) (8,4,2) (8,7,2)
+switch_at    = (4,4,2)
+density      = 0.7
+color        = #6FB0D0
+
+[pipe in2->J]
+state        = OFF
+path         = (2,10,2) (8,10,2) (8,7,2)
+switch_at    = (4,10,2)
+density      = 0.7
+color        = #6FB0D0
+
+# The DECOY pipe — feeds the warm lie. Switch sits on the near, lit path so it
+# is the one the player reaches first. Toggling it lights A_obvious; the door
+# stays shut. The trap.
+[pipe J->A_obvious]
+state        = OFF
+path         = (8,7,2) (11,7,2) (11,4,2) (14,4,2)
+switch_at    = (11,7,2)
+density      = 0.7
+color        = #FFC15A
+
+# The TRUE pipe — feeds the cold target. Switch sits on the far, dim path.
+[pipe J->B_true]
+state        = OFF
+path         = (8,7,2) (11,7,2) (11,10,2) (14,10,2)
+switch_at    = (11,10,2)
+density      = 0.7
+color        = #5C7A8C
+
+# Warm decoy beacon — an amber twin-glow that materialises when the LIE lights.
+# Pure mood: it makes A_obvious read as the inviting goal. It is NOT a door
+# target, so lighting it never wins.
+#
+# ANCHOR (owner APPROVED, the puzzle-graph redesign L10 @q): this
+# stays anchored on the TRUTH-branch pedestal below, not a north-branch offset —
+# the irony is kept. Lighting the lie paints the truth's pedestal.
+[part lure]
+size         = 1 1 2
+mask         =
+#
+
+#
+color        = #FFC15A
+
+[emit A_obvious=1]
+parts        = lure
+
+[inputs]
+in1          = 1
+in2          = 1
+
+[pedestal]
+center       = 14 10 1
+volume       = 1 1 1
+
+# THE DOOR — win-target is B_true ONLY. There is no silhouette field; the door
+# is just an anchor + the truth it checks. The "lie" is the room around it.
+[door]
+pos          = 19 12 1
+target_parts = B_true
+
+# ── SET DRESSING (L10) ───────────────────────────────────────────────────────
+# Meaning: THE LIE IS FURNISHED AND WARM; THE TRUTH IS STRIPPED. The north branch is
+# dressed like a P1 office (style = lab on purpose: it looks like home). The south
+# branch is dead racks, rubble and a fallen ceiling. The floor tells you which is
+# which, but only once you have made it true: each branch cable lights only when
+# its own node fires. No puzzle cell, portal or door is touched.
+
+# Lit slots in the hue of what powers them (§3.6 colour law).
+[material lure_lit]
+preset      = neon
+fg          = #FFC15A
+bg          = #A87420
+
+# The truth's cable lights cold white: B_true's own steel-blue, lifted so the lit
+# strand reads on the dark floor (the raw #5C7A8C is floor-dark).
+[material truth_lit]
+fg          = #D8ECF8
+bg          = #0A141C
+recipe      = grain scale=1.0 speck=0.0
+
+[material budget_lit]
+preset      = neon
+fg          = #FFB040
+bg          = #A86818
+
+# SIGNPOST — the budget made physical on the divider's west face, on the top course
+# above the three placards (z=2..3 carry the note text, so the bank sits at z=4):
+# three amber lamps, one per wire held. Two to weigh J, one to choose. Light the
+# lure and the third lamp is spent; the truth has nothing left to draw.
+[prop budget]
+kind     = budget_bank
+mat.lit  = budget_lit
+at       = 11 6 4
+facing   = -x
+size     = 3 1 1
+
+# Floor — the two feeds into the junction, lit with their pipes.
+[prop feed_1]
+kind     = cable_run
+follow   = pipe:in1->J
+
+[prop feed_2]
+kind     = cable_run
+follow   = pipe:in2->J
+
+# NORTH BRANCH — the lure, a warm little office: desk, chair, a picture, a plant, and
+# a rack that answers the lie. Traced furniture, so the office stays light and open.
+[prop lure_desk]
+kind     = furniture_trace
+shape    = table
+style    = lab
+at       = 14.8 1.1 1
+facing   = +y
+size     = 1.8 0.9
+
+[prop lure_chair]
+kind     = furniture_trace
+shape    = chair
+style    = lab
+at       = 15.4 2.3 1
+facing   = -y
+size     = 0.6 0.6
+
+# A picture hung above the desk: someone made this corner theirs.
+[prop lure_frame]
+kind     = furniture_trace
+shape    = frame
+style    = lab
+at       = 15.3 1.02 2.3
+facing   = +y
+size     = 0.8 0.0 0.6
+
+[prop lure_rack]
+kind     = rack
+style    = lab
+mat.body = metal
+mat.lit  = lure_lit
+at       = 13 2 1
+facing   = +y
+size     = 1 2 2
+power    = node:A_obvious
+
+[prop houseplant]
+kind     = furniture_trace
+shape    = planter
+style    = lab
+at       = 17.2 1.2 1
+facing   = +y
+size     = 0.6 0.6
+
+[prop lure_cord]
+kind     = lamp_pendant
+style    = lab
+at       = 16.0 3.0 3.5
+light    = existing
+
+# The lie's cable: it runs on past A_obvious to the lit doorway (the portal), and
+# lights only when the lie is fed.
+[prop lie_cable]
+kind     = cable_run
+follow   = pipe:J->A_obvious
+extend   = 18 3 1
+power    = node:A_obvious
+bundle   = 2
+
+# ROUND 2 — THE SIGNPOST, BROUGHT INTO READING RANGE. K.H.'s note sat on the
+# divider's west face, 10.5 cells from the spawn, where this level's contract fog
+# (fog_far 11) left it ~95 % fogged: dark text in a dark box. It is
+# re-homed (text untouched, position only) onto a free-standing board at the
+# mouth of the fork, 5.5 cells from the spawn and just south of the centreline so
+# it does not hide J. The two system notes stay on the divider behind it.
+[prop signpost]
+kind     = notice_board
+mat.body = wood
+at       = 7 8 1
+facing   = -x
+size     = 2 1 2
+note     = researcher
+
+# ROUND 2 — THE CHOICE, LAID ACROSS THE FLOOR IN FRONT OF YOU. The two branch
+# cables run away from the spawn along the view axis, and a floor strand seen
+# end-on does not render, so lie and truth differed by ~30 cells at spawn. These
+# two strands cross the corridor at x=3 instead, two steps ahead of the spawn, one to each branch: the north
+# half lights warm with the lie (A_obvious), the south half lights cold white
+# with the truth (B_true). Dark until their node fires, like the branch cables.
+[prop lie_cross]
+kind     = cable_run
+at       = 3.5 7.4 1.02
+to       = 3.5 1.3 1.02
+power    = node:A_obvious
+bundle   = 3
+
+[prop true_cross]
+kind     = cable_run
+at       = 3.5 7.6 1.02
+to       = 3.5 14.7 1.02
+power    = node:B_true
+mat.lit  = truth_lit
+bundle   = 3
+
+# Round 3 (design pass 2, fix 7 — "the warm-lie / cold-truth difference is still
+# three 1-px floor lines, not a warm or cold floor"). Two POOLS on the floor ahead of
+# the spawn, one per branch:
+#  * the LIE is a pool of warm lamplight: a pendant over the north half of the fork,
+#    its lamp gated on `A_obvious` (R3), dark until the lie is fed — then the whole
+#    north floor goes gold, exactly as inviting as a lie should be;
+#  * the TRUTH is a cold basin of still steel-blue water across the south half, just
+#    left of the view axis: always there, never lit, easy to walk past — see round 5
+#    below for the actual floor re-material (rounds 3-4's `furniture_trace` attempts
+#    are superseded).
+#    Its strands still light cold white when B_true fires.
+# The lamp is `light = yes` (the kit's gated lamp); `light = existing` binds a lamp but
+# never switches it. Lights: 1 authored + 1 kit = 2 of 4.
+[prop lie_glow]
+kind     = lamp_pendant
+at       = 4.5 2.5 3.2
+light    = yes
+power    = node:A_obvious
+
+# SET DRESSING 2026-09-24 (real-world), round 5 (design review of round 4's contact sheet:
+# "the stack basin reads as a wire rectangle with hatching, not a pool"). Rounds 3-4
+# both tried to draw the pool as a PROP (a `furniture_trace` — lines stamped over the
+# ordinary floor); no line-drawn shape reads as "liquid", because a `furniture_trace`
+# is strokes, not a surface. This round instead RE-MATERIALS the actual floor cells:
+# `[zone NAME] region=(...) material=NAME` stamps a 1-based colour-material id into
+# `side_data` for every GEOMETRY cell (of whatever kind it already is) inside its
+# region — confirmed against `re_level::tests::zone_stamps_resolved_palette_id_into_region_only`,
+# which builds exactly this on a `CellKind::Floor` slab and reads back the palette id.
+# The room's `[cells]` z=0 layer is a dense Floor slab under this whole south branch
+# (no divider there — the divider starts at z=1), so a zone here has real Floor cells
+# to re-material. (The round-3 comment's claim that `[zone]` "does not show" was
+# against z=1, the WALKING layer — those cells are `CellKind::Empty`, and a zone
+# explicitly does NOT stamp air: "the AIR above a zone floor cell is preserved",
+# same test. z=0 is the fix.)
+#
+# Two zones, rim then centre (later zone wins on the overlap, same test file,
+# `later_zone_wins_over_earlier_overlapping_zone`): `pool_rim` (6x6, `≈`, darker) is
+# listed first and covers the whole basin; `pool_center` (4x4, `~`, brighter — a
+# highlight band) is listed second and repaints its inset middle. No prop, no lines,
+# no strokes — this is the floor's own material, so it reads as a surface, not wire.
+#
+# ROUND 8 (2026-09-25 (real-world), "L10: the pool ... has low
+# contrast against the floor at the default view"). Measured cause: `pool_rim`'s
+# fg (#2E6478, luma ~86) sat almost exactly ON `cold_floor`'s fg (#4A545E, luma
+# ~82) — same luma, only hue differed, and the shared `grain` recipe's speckle
+# masks the rest, so the two read as one tone from the spawn. Re-tuned so the
+# rim/centre/highlight ramp is unambiguous against the floor: `pool_rim` now
+# DARKER than the floor (a real edge-shadow, not a near-match), `pool_center`
+# raised well ABOVE the floor's luma in a saturated cold cyan foreign to the
+# floor's desaturated steel-grey, and `pool_highlight` pushed to a near-white
+# catch-light. Verified with a before-and-after render diff — the basin now reads as a distinct dark-to-
+# bright water surface, not a floor-coloured smear.
+[material pool_rim]
+fg          = #123240
+bg          = #01050A
+glyph       = ≈
+recipe      = grain scale=2.6 speck=0.14
+
+[material pool_center]
+fg          = #35D6F2
+bg          = #082C38
+glyph       = ~
+recipe      = grain scale=1.8 speck=0.08
+
+# ROUND 7 (real-world, engine fix landed):
+# `re_render`'s floor/ceiling row cast (`backdrop_floor_decal`, now
+# `backdrop_floor_ceiling_material`) now consults `registry.color_material(side_data)`
+# for an unflagged Floor/Ceiling cell exactly the way `shade_cell` already does for
+# walls, instead of ONLY `MaterialRegistry::is_floor_decal` (the two hardcoded
+# prop-kit decal producers). So the two zones above — unchanged since round 5, and
+# proven correct in the DATA the whole time — now actually reach the screen: verified
+# with a fresh `--dump`, pixel-diffed against the same frame with both `[zone]` blocks
+# excised (non-zero, localized to the basin). The round-6 `furniture_trace pier`
+# ripple-decal workaround is REMOVED below: it was stamped at z=1 with a footprint
+# that overlaps the zones' z=0 region, and `[prop]` decals stamp after zones and win
+# on the same cells (this file's own round-5/6 note), so as long as it stayed it would
+# have kept masking the real fix by silently overwriting the zone's colour id with its
+# own flat decal id — the exact reason removing it (not just landing the engine fix)
+# is what makes the pool visible at all.
+#
+# A third zone adds the "maybe a highlight band" ask: a small brighter inset near the
+# centre, a shade lighter than `pool_center`, reading as a catch-light on the water.
+# Three zones, later wins on overlap (`later_zone_wins_over_earlier_overlapping_zone`):
+# `pool_rim` (6x6, `≈`, darkest — the basin) → `pool_center` (4x4, `~`, mid-bright —
+# the body) → `pool_highlight` (2x2, `~`, brightest — the catch-light), so the basin
+# now has a real rim/centre/highlight two-tone-plus ramp instead of one flat ink wash.
+# ROUND 8 re-tune (see the pool_rim/pool_center comment above): pushed brighter still,
+# toward a near-white cyan catch-light, now clearly the brightest thing in the basin
+# rather than one step above `pool_center`.
+[material pool_highlight]
+fg          = #D6FBFF
+bg          = #123C4A
+glyph       = ~
+recipe      = grain scale=1.2 speck=0.05
+
+[zone pool_rim]
+region      = (3,8,0)-(8,13,0)
+material    = pool_rim
+
+[zone pool_center]
+region      = (4,9,0)-(7,12,0)
+material    = pool_center
+
+[zone pool_highlight]
+region      = (5,10,0)-(6,11,0)
+material    = pool_highlight
+
+# ROUND 8 (same ask) — "optionally a `[light]` above the pool so it
+# glows". A cool cyan point light directly over the basin, always on (the truth
+# branch is "always there, never lit" by design — this is ambient set dressing, not
+# a puzzle signal, so it is not gated to any node). `grain` is one of the lit
+# recipes point lights actually affect, so this genuinely lifts
+# the basin's shading, not just its base colour. 3rd of 4 lights used in this level
+# (the amber lure lamp + the gated `lie_glow` pendant are the other two).
+# Placed at y=11.2, not the basin's exact centre y=10.5: the z=2 node/pipe plane
+# has `in2->J`'s WallTrace run along the whole x=2..8 span AT y=10 (the row directly
+# under the centre), and lvlcheck's `lighting` check correctly flags a light buried
+# in WallTrace geometry as bleeding through the wall instead of lighting the room.
+# y=11 is fully open at z=2 for the whole room width — still well inside the pool
+# zones (rim y=8..13, centre y=9..12) — so the light clears the pipe run.
+[light]
+pos         = 5.5, 11.2, 2.2
+color       = #6FE8FF
+radius      = 3.2
+intensity   = 0.85
+
+# SOUTH BRANCH — the truth, stripped.
+[prop stripped]
+kind     = rack_row
+at       = 17 14 1
+facing   = -y
+size     = 4 1 2
+style    = dead
+
+[prop wreckage]
+kind     = debris
+at       = 3 13 1
+size     = 7 2 1
+count    = 4
+style    = dead
+
+[prop fallen_ceil]
+kind     = hanging_panels
+at       = 12 14 3
+size     = 6 4 1
+
+# The truth's cable: on past B_true to the real door. Dark until B_true fires,
+# i.e. until the level is really solved.
+[prop true_cable]
+kind     = cable_run
+follow   = pipe:J->B_true
+extend   = 19 12 1
+power    = node:B_true
+mat.lit  = truth_lit
+bundle   = 2
+
+# Spawn just inside the west wall, beside the portal's return face, facing east
+# down the fork corridor: the divider's signpost notes are dead ahead, the warm
+# north branch glows to the left, the cold south branch sits dark to the right.
+[player]
+spawn        = 1 7 1
+facing       = +x

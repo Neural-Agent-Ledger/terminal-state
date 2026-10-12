@@ -1,0 +1,122 @@
+# TERMINAL STATE — the CAMPAIGN MANIFEST
+#
+# The authored order of the twelve story levels. This file — NOT the filename
+# sort — is what `re_game::flow` uses to build the CAMPAIGN folder, to order it in
+# level-select, and to gate it (level N+1 unlocks when level N is solved).
+#
+# It is EMBEDDED at compile time (`include_str!` in crates/re_game/src/flow.rs), so
+# the shipped static binary carries the campaign with it and needs no runtime asset
+# path. Editing this file therefore requires a rebuild — that is deliberate: the
+# campaign order is code-level content, not a user setting.
+#
+# `id` is the level's STABLE progress key (its file stem — the same key
+# `save::Progress` stores), so reordering the campaign never orphans a save.
+#
+# `movement` is the four-movement frame of docs/lore/PUZZLE_PROGRESSION_L1-L12.md §1:
+#   P1  "First Sight"            L1–L3   sort true memory from script-projection
+#   P2  "Splitting / the angle"  L4–L6   we ARE the gaze
+#   P3  "The Phantom Sister"     L7–L9   a node that never answers
+#   P4  "The Closing / Exit-Exit" L10–L12 the choice
+# Wave 3 maps these tags to the audio director's movement themes; nothing else
+# consumes them yet.
+#
+# `load` is the escalation contract's fog_far for this level (STORY_BIBLE §7:
+# "fog_far shrinks, fog_color blackens, level to level — the world closes in as the
+# system dies"). It is recorded here as the SINGLE SOURCE OF TRUTH for the curve and
+# asserted monotone non-increasing by `flow::tests::campaign_fog_far_is_monotonic`.
+#
+# The pre-manifest numbered rooms `levels/01.lvl`..`08.lvl` are NOT deleted — they
+# stay playable (and shard-bearing) under the ARCHIVE browse folder. The L-files are
+# their story-true successors.
+
+version = 1
+
+[[level]]
+id       = "L1-first-pulse"
+path     = "levels/L1-first-pulse.lvl"
+name     = "First Pulse"
+movement = "P1"
+fog_far  = 20.0
+
+[[level]]
+id       = "L2-two-make-three"
+path     = "levels/L2-two-make-three.lvl"
+name     = "Two Make Three"
+movement = "P1"
+fog_far  = 19.0
+
+[[level]]
+id       = "L3-full-spectrum"
+path     = "levels/L3-full-spectrum.lvl"
+name     = "Full Spectrum"
+movement = "P1"
+fog_far  = 17.0
+
+[[level]]
+id       = "L4-the-angle"
+path     = "levels/L4-the-angle.lvl"
+name     = "The Angle"
+movement = "P2"
+fog_far  = 17.0
+
+[[level]]
+id       = "L5-soft-footstep"
+path     = "levels/L5-soft-footstep.lvl"
+name     = "The Soft-Footstep"
+movement = "P2"
+fog_far  = 16.0
+
+[[level]]
+id       = "L6-polysemantic"
+path     = "levels/L6-polysemantic.lvl"
+name     = "Polysemantic"
+movement = "P2"
+fog_far  = 15.0
+
+[[level]]
+id       = "L7-hidden-depths"
+path     = "levels/L7-hidden-depths.lvl"
+name     = "Hidden Depths"
+movement = "P3"
+fog_far  = 14.0
+
+[[level]]
+id       = "L8-cold-room"
+path     = "levels/L8-cold-room.lvl"
+name     = "The Cold Room"
+movement = "P3"
+fog_far  = 14.0
+
+# GOLDEN-PINNED (see flow::tests::FOG_PENDING). The authored escalation value is
+# 13.0; the file still carries 22.0 because lowering it changes this level's
+# `--dump` frame, and the plan's golden policy allows exactly three refreshes
+# (end W1 / W3 / W4) by the golden-hash curator only. Lands with refresh #2, W3.
+[[level]]
+id       = "L9-stereopsis"
+path     = "levels/L9-stereopsis.lvl"
+name     = "Stereopsis"
+movement = "P3"
+fog_far  = 13.0
+
+[[level]]
+id       = "L10-lying-door"
+path     = "levels/L10-lying-door.lvl"
+name     = "The Lying Door"
+movement = "P4"
+fog_far  = 11.0
+
+[[level]]
+id       = "L11-inner-circuit"
+path     = "levels/L11-inner-circuit.lvl"
+name     = "Inner Circuit"
+movement = "P4"
+fog_far  = 11.0
+
+# GOLDEN-PINNED (see flow::tests::FOG_PENDING). Authored escalation value 10.0;
+# the file still carries 13.0. Lands with golden refresh #2, W3.
+[[level]]
+id       = "L12-closing"
+path     = "levels/L12-closing.lvl"
+name     = "The Closing"
+movement = "P4"
+fog_far  = 10.0

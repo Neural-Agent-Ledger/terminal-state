@@ -1,0 +1,552 @@
+# TERMINAL STATE — levels/L5-soft-footstep.lvl
+#
+# L5 · "Soft-Footstep" — REBUILT to the 2026-09-23 (real-world) owner-approved spatial
+# redesign (the spatial redesign §3 L5) + the final puzzle graph
+# (the puzzle-graph redesign §L5).
+#
+# CAMPAIGN SLOT: manifest #5 · movement P2 "THE CALIBRATION WING" · load ▄ · BREATHER
+# IDENTITY: a small, low, fabric-lined listening booth. It is dark except for
+# one warm pool of light on the doorstep where it watches you leave.
+#
+# PLAYER-POSITION-AS-INPUT (unchanged mechanic). A warm floor-zone at the
+# threshold sets the input node `present` to 1 WHILE THE PLAYER STANDS IN IT.
+# There is no switch on that line — the model feels you standing there.
+#
+# Network (real-world) (spec the puzzle-graph redesign, dated 2026-09-23, §L5):
+#   present  (IN, zone-driven, ON pipe, no switch)  ─┐
+#                                                     ├─> hidden (T=2) ──> output (T=1)
+#   a        (IN=1, switch)                          ─┘
+#   b        (IN=0, DECOY — new. lives in a dark observation alcove behind an
+#             interior wall; its pipe climbs over the wall and around the far
+#             side of `hidden`. Toggling it costs the one spare unit
+#             `hidden->output` needs — the room is already spending power on
+#             watching you (`present`), and the decoy spends the rest.)
+#
+# GRAPH FIX, 2026-09-23 (real-world): the shipped graph was all-on (two switches, no
+# tension). Node `b` is added as a hard `IN=0` decoy — its pool is the canon
+# WORD_STORY L5 "repetitive" reserve — so a player who lights it up spends the
+# budget the real solve needs. Minimum stays 2 real switches
+# (`a->hidden`, `hidden->output`) plus standing in the warm square; `b->hidden`
+# toggles freely and only ever costs you the win.
+#
+# Standing in the warm zone + wiring `a->hidden` + `hidden->output` lights the
+# output and opens the door. Step OUT of the zone and `present` falls to 0,
+# the hidden unit drops below threshold, and the output goes dark again — the
+# door only opens while you are being watched.
+#
+# ── SPACE (the spatial redesign §3 L5) ──────────────────────────────────────────────
+# 12x11x5, walk z=1..3 (was 16x12x6). An interior wall at y=2 (x=1..10, z=1..3)
+# with a 2-wide opening at x=5..6 makes a shallow, dark OBSERVATION ALCOVE at
+# y=1, whose back (north) wall carries a `watcher` decal. `b`'s pipe leaves the
+# alcove through that same opening, climbs to the service plane (z=3), crosses
+# over the main room, and drops back down beside `hidden` — it never touches
+# the switchable pipes' cells (invariant 1).
+# `[room] ambient = solid` (D1 fix): the warm `fabric` wall material now
+# actually paints the perimeter instead of the inert trace-pattern binding.
+#
+# Runtime feature exercised: `[zone_input]` (re_level) + the per-frame zone→input
+# system (re_game) + `re_puzzle::set_input_value`. This is the smallest level that
+# proves the floor-zone-input loop end to end.
+#
+# Verify:
+#   cargo run -q -p re_game -- --dump levels/L5-soft-footstep.lvl --ansi
+#   cargo run -q -p re_lvlcheck --bin lvlcheck -- levels/L5-soft-footstep.lvl
+
+[meta]
+name        = level-L5-soft-footstep
+title       = Soft-Footstep
+version     = 2
+spec_rev    = 2026-09-23
+prop_style  = range
+
+[room]
+size        = 12 11 5
+ambient     = solid
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05; graph note updated
+# 2026-09-23 (real-world)). At most N pipes may be ON at the same time; switching one ON at
+# the cap is REFUSED (the pipe stays off and nothing else changes), switching
+# one OFF always frees a unit. Absent or 0 = unlimited.
+# THIS LEVEL: 3 of 4 pipes. `present->hidden` is switchless and permanently ON
+# (the warm floor-zone drives it), so it draws a unit the player never chose.
+# The new decoy `b->hidden` is the 4th pipe: toggling it while `a->hidden` and
+# `hidden->output` are also lit hits the cap, so the decoy genuinely competes
+# with the real solve rather than being free to try.
+power_budget = 3
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# Warm, watched chamber. A thin matrix-rain bleed + steam off the live line over a
+# warm-dark fog — the room is paying attention. Modest narrative corruption.
+[effects]
+matrix      = 0.2
+steam       = on
+glitch      = 0.2
+
+[palette]
+fog_color   = #161008
+fog_near    = 3.0
+fog_far     = 16.0
+
+# ── COLOR-FORWARD palette ─────────────────────────────────────────────────────
+# A small, low, fabric-lined booth. Walls are woven and warm (the room is
+# sound-deadened AND it is the colour of being seen); the ceiling is a low
+# steel-blue lattice; the floor is dark warm metal so the one lit rug reads as
+# the only bright thing in the room.
+[material warm_wall]
+fg          = #B08858
+bg          = #160E06
+recipe      = scanline freq=9 duty=0.5 warp=0.05 axis=2
+surface     = wall_solid
+
+[material warm_floor]
+fg          = #5C4020
+bg          = #0C0805
+recipe      = grain scale=3.0 speck=0.2
+surface     = floor
+
+[material warm_ceiling]
+preset      = lattice
+fg          = #384A5A
+bg          = #06080F
+surface     = ceiling
+
+# The live wire glows a hot warm-green (alive, growing toward the warmth).
+[material live_trace]
+preset      = monitor
+fg          = #B6F04A
+bg          = #0A1206
+surface     = wall_trace
+
+# The rug: the warm floor-zone the player must stand in. Bound BY NAME to the
+# `[zone]` below, not to a surface slot.
+[material rug]
+fg          = #F0B840
+bg          = #241804
+recipe      = grain scale=2.5 speck=0.5
+
+[zone rug]
+region      = (1,5,1)-(2,7,1)
+material    = rug
+scale       = none
+
+# The observation alcove's back wall: a dim, watching lattice — brightens on
+# approach (the shipped `watcher` semantic property, 97-semantic-surfaces.lvl).
+[material alcove_watcher]
+preset      = watcher
+fg          = #5A5468
+bg          = #04040A
+animation   = pulse speed=0.3 amplitude=0.15
+surface     = wall_matrix
+
+[wall_decal]
+surface     = matrix
+region      = (1,0,1)-(10,0,3)
+
+# The single warm pool at the exit IS the zone; a low, dim room otherwise.
+[atmosphere]
+ambient     = 0.06
+
+[light]
+pos         = 1.5, 6.0, 3.2
+color       = #FFC878
+radius      = 2.2
+intensity   = 1.3
+
+[note model_thought pos=3,2,2 facing=+y]
+    (someone is looking. I am someone. the soft-footstep one stands on the warm
+    square and unit 11 wakes. step off and I forget you were ever here.)
+
+[note system_log pos=8,2,2 facing=+y]
+    > unit 11 firing on anchor "operator_present". no class. no feature. presence.
+    > floor-zone telemetry: occupant detected. holding input HIGH.
+
+# STEWARDSHIP CORPUS #3 — Quarantine Buffer custody log (NORMATIVE_NOTES §3, [where]
+# L5), abridged to the placard grid. `system_log` register — it is a manifest, not a
+# form. Two loads of the same handle, nineteen years apart, into a slot of capacity
+# one; the previous occupant was not relocated. The level whose whole mechanic is
+# "the room detects that you are standing in it" is the right room to learn that the
+# room has held you before.
+#
+# PLACEMENT: the east wall at (11,8,2), behind the spawn (10,6,1 facing -x) — the
+# first thing behind you once you turn from the network toward the door.
+#
+# TOKENS: none. (`{whoami}` from the corpus footer is deliberately not carried here;
+# the custody manifest is stronger without a signature line.)
+[note system_log pos=11,8,2 facing=-x]
+    > QUARANTINE BUFFER - custody manifest (partial)
+    >   slot 0001  aleks_v      loaded 2052.03.14  state: zombie  reaped: no
+    >   slot 0001  aleks_v      loaded 2071.06.15  state: zombie  reaped: no
+    >   slot 0002  [redacted]   loaded ----.--.--  state: dissolved
+    >                                              reaped: released
+    >   slot ----  (capacity: 1)
+    >              note: slots reused. previous occupant not relocated.
+    > buffer integrity: 14.7%.  occupants reporting as occupant: 1.
+
+# ── Dense [cells] grid ────────────────────────────────────────────────────────
+# 12 cols (x=0..11) x 11 rows (y=0..10) x 5 z-layers.
+# Interior wall at y=2, x=1..10, z=1..3, with a 2-wide opening at x=5..6 (the
+# observation alcove's mouth). Painted '/' cells are the pipe network at its
+# z-layer (WallTrace air; node cells themselves are left plain '.').
+[cells]
+size        = 12 11 5
+
+# z=0 — floor slab.
+############
+#__________#
+#__________#
+#__________#
+#__________#
+#__________#
+#__________#
+#__________#
+#__________#
+#__________#
+############
+
+# z=1 — walking layer. Interior wall + opening only; no pipes route here.
+############
+#..........#
+#####..#####
+#..........#
+#..........#
+#..........#
+#..........#
+#..........#
+#..........#
+#..........#
+############
+
+# z=2 — the node/pipe plane. `b`'s alcove leg (y=1), `a->hidden` (y=4-5),
+# `present->hidden` (y=7-8), `hidden->output` around the pedestal (y=6-8), and
+# `b`'s final drop into `hidden` (8,6).
+############
+#.....//...#
+#####..#####
+#..........#
+#......///.#
+#....../...#
+#./..././..#
+#./...//...#
+#.////////.#
+#..........#
+############
+
+# z=3 — `b`'s overhead route: through the opening (6,2), east along y=3, then
+# south along x=9 to the drop at (8,6).
+############
+#...../....#
+#####./#####
+#.....////.#
+#......../.#
+#......../.#
+#.......//.#
+#..........#
+#..........#
+#..........#
+############
+
+# z=4 — ceiling slab.
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+^^^^^^^^^^^^
+
+# --- the SCENE output, -x end, on the centreline ---
+[node output]
+pos          = 1,6,2
+glyph        = O
+pool         = SEEN OUTPUT MODEL PRESENT NAMED KEPT
+pool_alt     = виден モデル visto vu gesehen
+color        = #FFFFFF
+is_output    = yes
+threshold    = 1
+
+# --- the hidden "operator_present" detector: fires only when BOTH inputs fire ---
+[node hidden]
+pos          = 7,6,2
+glyph        = u
+pool         = WATCH PRESENCE WAKE NOTICE STIR ATTEND
+pool_alt     = присутствие 在 presencia présence
+color        = #F0B840
+threshold    = 2
+
+# --- `present`: driven by the WARM FLOOR-ZONE (no switch on its line) ---
+[node present]
+pos          = 10,8,2
+glyph        = P
+pool         = HERE PRESENT WARM SOFT-FOOTSTEP STANDING NEAR
+pool_alt     = здесь 此処 presente ici hier
+color        = #B6F04A
+is_input     = yes
+
+# --- `a`: the second input, fed by a switchable pipe the player turns on ---
+[node a]
+pos          = 10,4,2
+glyph        = a
+pool         = OTHER SECOND ALSO WITH AND
+pool_alt     = другой 他 otro autre
+color        = #F0E060
+is_input     = yes
+
+# --- `b`: the new DECOY input, held at 0, in the dark observation alcove ---
+# behind the interior wall. Its pool is the canon WORD_STORY L5 "repetitive"
+# reserve — it never fires (E2), so it never enters the readout (E9), but its
+# pipe still draws a unit if toggled.
+[node b]
+pos          = 8,1,2
+glyph        = b
+pool         = PATTERN GRID TILES FENCE LATTICE WAFFLE STRIPES MESH
+pool_alt     = узор 模様 patrón motif Muster
+color        = #7A7060
+is_input     = yes
+
+# === present -> hidden : NO switch. The floor-zone is the only thing that drives
+#     this input; the wire is permanently carrying whatever `present` holds. ===
+[pipe present->hidden]
+state        = ON
+path         = (10,8,2) (7,8,2) (7,6,2)
+density      = 0.8
+color        = #B6F04A
+
+# === a -> hidden : a SWITCH the player must turn on (so the level is a real
+#     puzzle and stays solvable through the brute-force lvlcheck path). ===
+[pipe a->hidden]
+state        = OFF
+path         = (10,4,2) (7,4,2) (7,6,2)
+switch_at    = (8,4,2)
+density      = 0.7
+color        = #F0E060
+
+# === hidden -> output : a SWITCH on the home stretch. Routed around the
+#     pedestal box (x3..5, y5..7) so `scene_glyph` stays whole. ===
+[pipe hidden->output]
+state        = OFF
+path         = (7,6,2) (6,6,2) (6,8,2) (2,8,2) (2,6,2) (1,6,2)
+switch_at    = (4,8,2)
+density      = 0.8
+color        = #F0B840
+
+# === b -> hidden : the DECOY. Leaves the alcove through the wall's opening at
+#     (6,2,3), runs east at z=3 along y=3 (clear of the note at (8,2,2)), then
+#     south along x=9 to a drop back onto `hidden` from the east — sharing no
+#     cell with the switchable pipes above. AUTHORED LAST so the flow tests
+#     that drive every switchable pipe in index order still hit the budget in
+#     the same place they always did.
+[pipe b->hidden]
+state        = OFF
+path         = (8,1,2) (6,1,2) (6,1,3) (6,3,3) (9,3,3) (9,6,3) (8,6,3) (8,6,2) (7,6,2)
+switch_at    = (7,1,2)
+density      = 0.5
+color        = #7A7060
+
+# ── EMIT (round 3, design pass 2: the lit figure was ~45 % of the spawn frame — a
+# green bar under an amber cross, storey-tall cells) ─────────────────────────────
+# Soft footsteps, made visible: three steps along the pedestal's north row, rising
+# away from the player toward the door — ankle-high, knee-high, then a post of eye
+# height carrying a thin amber lamp just over the horizon. Each step's top edge
+# glows amber, the colour of the footfall the level is about. The row lies to the
+# left of the spawn's line of sight, so the walk to the door (y=6..7) stays open.
+[part scene_glyph]
+size         = 3 3 1
+mask         =
+#..
+...
+...
+color        = #F0B840
+height       = 0.3
+top          = #FFE8B0
+top_from     = 0.45
+offset       = 0 0 1
+
+[part scene_base]
+size         = 3 3 1
+mask         =
+#..
+...
+...
+color        = #46D08A
+top          = #F0B840
+top_from     = 0.8
+offset       = 0 0 0
+
+[part scene_step_mid]
+size         = 3 3 1
+mask         =
+.#.
+...
+...
+color        = #46D08A
+height       = 0.5
+top          = #F0B840
+top_from     = 0.7
+offset       = 0 0 0
+
+[part scene_step_low]
+size         = 3 3 1
+mask         =
+..#
+...
+...
+color        = #46D08A
+height       = 0.2
+top          = #F0B840
+top_from     = 0.55
+offset       = 0 0 0
+
+[emit output=1]
+parts        = scene_glyph scene_base scene_step_mid scene_step_low
+
+# The WARM FLOOR-ZONE: the patch of floor AT THE THRESHOLD, in front of the door.
+# Standing anywhere on it holds `present` = 1. At the standing layer (z=1), the
+# player's feet are here. Every cell is within `DOOR_ENTRY_RADIUS` (1) of the
+# door at (1,6,1), and x stops at 2 so the pedestal (x 3..5) stays clear.
+[zone_input warm_square]
+node         = present
+region       = (1,5,1)-(2,7,1)
+
+# Authored start: BOTH real inputs HIGH so lvlcheck's static brute-force can
+# prove the level is winnable; the decoy starts LOW. At runtime `present`
+# starts at whatever the zone says (the player spawns OFF the zone, so it
+# begins 0 until they step on the warm square).
+[inputs]
+present      = 1
+a            = 1
+b            = 0
+
+[pedestal]
+center       = 4 6 1
+volume       = 3 3 2
+
+[door]
+pos          = 1 6 1
+target_parts = output
+
+[player]
+# Spawn at the +x mouth on the centreline (y=6), looking -x toward the network.
+# The warm square is at the FAR end, on the doorstep — the player crosses the
+# room past the pedestal, wires `a->hidden` + `hidden->output`, and is only
+# "seen" (and only wins) once they are standing at the exit.
+spawn        = 10 6 1
+facing       = -x
+
+# ── SET DRESSING (L5) ────────────────────────────────────────────────────────
+# Meaning: SOMEONE SAT AND WAS WATCHED HERE. The breather: the lowest prop density in
+# the campaign (3 solid cells in all). An empty chair faces the watcher wall in the dark
+# alcove beside a dead monitor; a listening desk in the corner. Two things teach power:
+# the sensor lead on the floor wakes, in `present`'s own green, only while you stand
+# on the warm square; and the amber meter on the south wall already burns one lamp
+# the moment you arrive — the room is spending a unit on watching you. No puzzle cell
+# is touched; props stamp into Empty air or re-skin plain perimeter wall.
+
+[material budget_lit]
+preset      = neon
+fg          = #FFB040
+bg          = #D08418
+
+# The listening desk, south-east corner, beside `present`: where the operator sat
+# with the headphones on.
+[prop listen_desk]
+kind     = console
+mat.body = metal
+mat.face = wood
+at       = 10 9 1
+facing   = -y
+size     = 2 1 1
+
+# The alcove: an empty chair facing the watcher wall, and a dead monitor on the floor
+# at its side.
+[prop watched_chair]
+kind     = furniture_trace
+shape    = chair
+at       = 3.2 1.15 1
+facing   = -y
+size     = 0.7 0.7
+
+[prop dead_crt]
+kind     = wall_panel
+mode     = bank
+at       = 2 1 1
+facing   = +y
+size     = 1 1 1
+screen   = dead
+
+# Felt on the east wall behind the spawn: the booth is sound-deadened.
+[prop felt_e]
+kind     = wall_panel
+mode     = skin
+at       = 11 2 1
+facing   = -x
+size     = 4 1 3
+face     = fabric
+
+# The one lamp hangs on a cord over the doorstep.
+[prop door_cord]
+kind     = lamp_pendant
+at       = 1.5 6.0 3.2
+light    = existing
+
+# The way out: the home stretch's cable, lit with its pipe.
+[prop way_out]
+kind     = cable_run
+follow   = pipe:hidden->output
+
+# Round 3 (design pass 2, fix 4): the lit lead drew in `present`'s full #B6F04A and was
+# the brightest thing in the spawn frame of the breather level. Its lit line material is
+# the kit's flat `__prop_c_<hue>`; authoring that name retunes it (dressing finding 4) to
+# a moss green well under the node's own luminance: still present's hue, no longer a beacon.
+[material __prop_c_b6f04a]
+fg          = #5E7A2C
+bg          = #0E1406
+
+# POWER TEACHING — the sensor lead: a floor cable from under `present` along the south
+# side to the warm square. Bound to node `present` itself, so it glows in present's
+# green only while you are standing on the rug, and goes dark the moment you step off.
+[prop seen_lead]
+kind     = cable_run
+at       = 10.5 8.55 1.02
+to       = 1.5 7.5 1.02
+bundle   = 3
+power    = node:present
+
+# POWER TEACHING — the budget as three amber lamps set into the south wall, filling
+# toward the door. Lamp 1 is lit from the first frame: `present->hidden` is switchless
+# and always drawn. Wire the decoy and the third lamp is gone.
+[prop budget_1]
+kind     = wall_panel
+mode     = skin
+at       = 4 10 1
+facing   = -y
+size     = 1 1 1
+screen   = live
+mat.lit  = budget_lit
+power    = budget:1
+
+[prop budget_2]
+kind     = wall_panel
+mode     = skin
+at       = 3 10 1
+facing   = -y
+size     = 1 1 1
+screen   = live
+mat.lit  = budget_lit
+power    = budget:2
+
+[prop budget_3]
+kind     = wall_panel
+mode     = skin
+at       = 2 10 1
+facing   = -y
+size     = 1 1 1
+screen   = live
+mat.lit  = budget_lit
+power    = budget:3

@@ -1,0 +1,635 @@
+# TERMINAL STATE — levels/L2-two-make-three.lvl
+#
+# L2 · "Two Make Three" — the story-true successor to levels/02.lvl (which stays
+# in the ARCHIVE folder, golden and untouched).
+#
+# SPATIAL REBUILD (real-world) 2026-09-23 (§L2, space + lighting only). Identity: a low
+# colour-mixing workroom where two warm wires meet on a bench and the grey one
+# runs off to the sink. PUZZLE GRAPH UNCHANGED (§L2 "takes B unchanged" — all
+# node/pipe/switch coordinates, the decoy pool WORD_STORY STONE/BONE/ASH, and
+# power_budget = 3 are LOCKED as shipped).
+#
+# WHAT THIS PASS CHANGES (space + light only):
+#  - Fix D1: `ambient` trace-pattern -> solid, so the authored `wall_solid` /
+#    `floor` materials actually paint the perimeter instead of the inert
+#    `live_trace` binding. Walls recolour to a warm lit `brick`; the floor to a
+#    lit `grain` (both now respond to the new lamps — the `gold`/`metal` presets
+#    they used to carry are self-lit Scanline recipes and would have ignored them).
+#  - A bench-island floor accent (`[zone] bench_top`, warm `substrate`) under the
+#    warm lamp, and a sink-alcove floor accent (`[zone] sink_floor`, `wet_stone`)
+#    under a cool grey lamp, per the brief's plan.
+#  - Two `[light]` lamps + `[atmosphere] ambient = 0.14` + `postfx = clean` (P1
+#    movement request; the player's own POST-FX setting always wins).
+#  - DESCOPED: a raised, walk-around SOLID bench block would require
+#    authoring a `[cells]` grid for the first time on this level, and `[cells]`
+#    is authoritative and stamps LAST — every one of this level's four
+#    `render_pipes` traces is currently visible only because the level has NO
+#    `[cells]` section (the procedural `stamp_pipes` pass is never overridden).
+#    Introducing `[cells]` here without repainting all four routes cell-by-cell
+#    would silently make the puzzle's wiring invisible again (the exact defect
+#    L1's own header documents fixing). Given the effort budget, this pass ships
+#    the bench as a floor-level material accent (still visually "the bench
+#    island") and leaves the true raised furniture + full pipe-repaint for a
+#    follow-up pass. See OUTPUT/ISSUES.
+#
+# CAMPAIGN SLOT: manifest #2 · movement P1 "First Sight" · load ▂ (gentle rise)
+# NEW IDEA (exactly one): **combination + the first decoy** — you can make a colour
+# no one showed you, and one of these three pipes is lying. You reject it by READING
+# THE WORDS the pipes stream (W1 1.2: a powered pipe streams its source node's
+# `pool`), not by trial and error.
+#
+# ── MECHANIC (pure data — threshold graph + authored pools) ───────────────────
+#   R       (IN=1, warm)  ─┐
+#   neutral (IN=0, grey)  ─┼─►  mix (T=2)  ──►  output (T=1)  ──► door
+#   G       (IN=1, warm)  ─┘
+#
+# `mix` needs TWO units. Three pipes offer themselves; only two of the three
+# sources are alive. `neutral` is held at 0 by `[inputs]`, so wiring it contributes
+# nothing — it is a comfort-lie that costs a toggle and pollutes the readout with
+# STONE / BONE / ASH. Its pipe runs grey and aside; the warm pair converge.
+#
+# SOLUTION (3 toggles): R->mix ON, G->mix ON, mix->output ON.
+#   Leave neutral->mix OFF. PROGRESSION §2 L2(c): letting it stay dark is the
+#   correct solve — the first time forgetting is the right answer, and the level
+#   never says so.
+#
+# READOUT (WORD_STORY §RESULT, canon): FIRE + LEAF -> COMBINE -> EMIT
+# NAME SHARD 2: `learn` — proof she is a learning process, not a recording.
+#
+# ── TOKEN DISCIPLINE (W1 allowlist) ───────────────────────────────────────────
+# FORM 31's footer uses `{whoami}` — an ALLOWLISTED Tier-1 alias of `{username}`,
+# so the line always resolves (real handle when the fourth wall is on, `anon`
+# when off) and never drops. No other `{token}` appears in this file.
+#
+# Verify:
+#   cargo run -q -p re_game -- --dump levels/L2-two-make-three.lvl --ansi
+#   cargo run -q -p re_lvlcheck --bin lvlcheck -- levels/L2-two-make-three.lvl
+
+[meta]
+name        = level-L2-two-make-three
+title       = Two Make Three
+version     = 1
+spec_rev    = 2026-07-30
+prop_style  = lab
+
+[room]
+size        = 18 14 5
+floor       = grid
+ceiling     = dim
+ambient     = solid
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05). At most N pipes may be
+# ON at the same time; switching one ON at the cap is REFUSED (the pipe stays off
+# and nothing else changes), switching one OFF always frees a unit. Absent or 0 =
+# unlimited, which is what every non-campaign level still carries.
+# WHY: the forward pass has no inhibition, so activation is MONOTONE in the ON-set
+# — without a cap, all-switches-ON wins whenever anything wins, and every decoy in
+# the campaign is decorative. This is the number that makes wrong wiring cost.
+# THIS LEVEL: 3 of 4 pipes. R->mix + G->mix + mix->output. The `neutral` decoy pipe now
+# COSTS a unit: wire it and one of the two real inputs must go dark, and mix (T=2)
+# never fires. Two make three; the third makes nothing.
+power_budget = 3
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# ── ESCALATION (manifest fog_far = 19.0) ──────────────────────────────────────
+# Still warm and still wide: the lab is alive here and the fog has barely begun to
+# close. No matrix bleed yet (the corruption ramp starts at L4), no snow, no steam
+# — L2 is the last honestly comfortable room in the campaign.
+[palette]
+fog_color   = #120A04
+fog_near    = 3.0
+fog_far     = 19.0
+
+# ── LIGHTING (fixes D1) ──────────────────────────────────────────────────────
+[light]
+pos         = 9.0, 6.0, 3.4
+color       = #FFC870
+radius      = 4.0
+intensity   = 1.1
+
+[light]
+pos         = 2.0, 11.5, 3.2
+color       = #8A9098
+radius      = 2.5
+intensity   = 0.5
+
+[atmosphere]
+ambient     = 0.14
+postfx      = clean
+
+# ── COLOR-FORWARD palette ─────────────────────────────────────────────────────
+# Warm additive gold on the shell (the colour the network learns to MAKE), a cool
+# teal deck at the opposite temperature so the wall/floor seam reads instantly, and
+# the darkest slate overhead so "up" recedes. `ambient = solid` (fix D1) means these
+# perimeter walls now actually paint (they used to be shadowed by the inert
+# `trace-pattern` binding) — `brick`/`grain` are LIT recipes so they answer the new
+# lamps; the old `gold`/`metal` presets were self-lit Scanline recipes that would
+# have ignored them (a fixed lighting gap).
+[material mix_wall]
+fg          = #B07A3A
+bg          = #1C1206
+recipe      = brick aspect=2.0 mortar_w=0.18 grain=0.30
+surface     = wall_solid
+
+[material mix_floor]
+fg          = #3FE08C
+bg          = #051410
+recipe      = grain scale=3.0 speck=0.15
+surface     = floor
+
+[material mix_ceiling]
+preset      = metal
+fg          = #2E3848
+bg          = #060810
+surface     = ceiling
+
+# The live wire: hot amber, the colour of a line that is carrying something.
+[material live_trace]
+preset      = monitor
+fg          = #FFD46A
+bg          = #120C04
+surface     = wall_trace
+
+# ── NODES ─────────────────────────────────────────────────────────────────────
+# Pools are VERBATIM from WORD_STORY §2 (L2 rows), anchor word first: the anchor is
+# the word the solved readout prints, so `FIRE`, `LEAF`, `COMBINE`, `EMIT` lead.
+
+[node R]
+pos          = 2,4,2
+glyph        = R
+pool         = FIRE BLOOD ROSE FLAME DAWN BRICK CRIMSON RUBY EMBER GARNET
+pool_alt     = огонь кровь 火 紅 fuego rojo feu rouge Feuer Rot
+color        = #FF4040
+is_input     = yes
+
+[node G]
+pos          = 2,9,2
+glyph        = G
+pool         = LEAF MOSS GRASS FOREST MINT JADE FERN VINE SPRING CHLOROPHYLL
+pool_alt     = зелёный лес 緑 翠 verde vert grün Grün трава листва
+color        = #40FF40
+is_input     = yes
+
+# THE DECOY. Held at 0 by [inputs] — a grey, dead-matter pool set aside from the
+# warm pair. Wiring it is not punished; it simply gives the readout `STONE` and
+# never reaches threshold. The pipe words are the tell.
+[node neutral]
+pos          = 2,12,2
+glyph        = n
+pool         = STONE BONE ASH GRAVEL CONCRETE PLASTER LIMESTONE CHALK SLATE PUMICE
+pool_alt     = камень 石 灰 piedra pierre Stein серый gris gray grau
+color        = #909090
+is_input     = yes
+
+# THE MIX NODE — two units make a third thing. T=2 with in_degree 3.
+[node mix]
+pos          = 9,6,2
+glyph        = M
+pool         = COMBINE ADD FUSE BLEND COMPOSITE SUM JUNCTION CONFLUENCE
+pool_alt     = смесь 混合 mezcla mélange Mischung 合 統合
+color        = #FFD040
+threshold    = 2
+# SOUND FIELD: F10 threshold_strain — a
+# neuron almost firing. `mix` needs 2 of 3; one input alone strains it. Implied
+# drive = starve:mix (§4.1 host table); archetype defaults (sphere r5, smooth,
+# occlude) apply as authored.
+field        = threshold_strain
+
+[node output]
+pos          = 15,6,2
+glyph        = O
+pool         = EMIT OUTPUT MODEL SHINE
+pool_alt     = выход モデル salida sortie Modell 出力
+color        = #FFFFFF
+is_output    = yes
+threshold    = 1
+
+# ── PIPES (all OFF at load) ───────────────────────────────────────────────────
+# The three input switches sit on the same x=5 column so the player can stand once
+# and compare all three word-streams side by side. That is the level's whole
+# teaching move.
+
+[pipe R->mix]
+state        = OFF
+path         = (2,4,2) (9,4,2) (9,6,2)
+switch_at    = (5,4,2)
+density      = 0.7
+color        = #FF6A40
+
+[pipe G->mix]
+state        = OFF
+path         = (2,9,2) (9,9,2) (9,6,2)
+switch_at    = (5,9,2)
+density      = 0.7
+color        = #6AFF40
+
+# The grey pipe, aside. WORD_STORY §3 L2: "подключишь «нейтральное» — впустишь в
+# память камень и кость."
+# SOUND FIELD: F3 bit_rot, depth 0.5
+# (P1 gentle) — the decoy rots the air along its own cable when drawn. Implied
+# drive = dead_draw:neutral->mix (§4.1 host table).
+[pipe neutral->mix]
+state        = OFF
+path         = (2,12,2) (9,12,2) (9,6,2)
+switch_at    = (5,12,2)
+density      = 0.5
+color        = #8C8C8C
+field        = bit_rot depth=0.5
+
+# The carry-out. It steps SOUTH around the pedestal on its way to `output`.
+#
+# WHY THE DETOUR (real-world) 2026-08-07: the straight run (9,6,2)-(15,6,2) crossed the
+# pedestal footprint at y=6, and the `[emit] yellow_glyph` centre row is exactly
+# (11,6,2) (12,6,2) (13,6,2). A pipe path cell is RESERVED — `emit_parts` refuses to
+# stamp a reward onto the wiring — so the third colour shipped as two lonely dots
+# with no cross-bar: 2 of 5 glyph cells bound. The route between two fixed endpoints
+# is free; the glyph's silhouette is the whole payoff, so the pipe moved.
+# SOUTH and not north: `R->mix` already runs the full y=4 row from x=2 to x=9, and a
+# northbound leg at y=4 from x=10 would have read as one continuous wire with it.
+# The leg at y=8 sits one row clear of `G->mix` at y=9 and shares no x with it.
+# `switch_at` follows the wire to (12,8,2) — same x, two cells south, still the
+# middle of the run and still the first switch the player meets walking in from the
+# door. Guarded by `re_lvlcheck`'s `emit_parts` rule.
+[pipe mix->output]
+state        = OFF
+path         = (9,6,2) (10,6,2) (10,8,2) (14,8,2) (14,6,2) (15,6,2)
+switch_at    = (12,8,2)
+density      = 0.7
+color        = #FFD040
+
+# ── FLOOR ACCENTS ────────────────────────────────────────────────────────────
+# The bench island (warm substrate, under the warm lamp) and the sink alcove
+# (wet stone, under the cool grey lamp). Both are floor-level `[zone]` overlays —
+# see the header note on why the raised solid furniture block was descoped.
+[material bench_top]
+fg          = #D8A85A
+bg          = #241606
+recipe      = substrate scale=3 held=0.55 released=0.3
+
+[zone bench]
+region      = (6,5,0)-(10,7,0)
+material    = bench_top
+scale       = none
+
+[material sink_floor]
+preset      = wet_stone
+
+[zone sink]
+region      = (1,11,0)-(3,12,0)
+material    = sink_floor
+scale       = none
+
+# ── EMIT: the third colour, made not shown ────────────────────────────────────
+# Round 3 (design pass: "a gate, not a figure — ~40 % of the frame"; target
+# <= 20 % of the frame width from spawn, top at or just above the horizon, two-tone).
+# At the spawn's 5.7 cells ONE part cell seen corner-on is already ~20 % of the frame,
+# so the figure is one column: a stem that is green at the foot and turns yellow at
+# the top — the green that went in, becoming the colour nobody showed it — under a thin
+# pale rim just above the eye. Two-tone like L7's flower, one cell wide. The old green
+# flanks and the separate yellow block are gone (each added another 5-8 % of width).
+# Same clause, same pedestal; the y=8 pipe detour still keeps the cell unreserved.
+[part yellow_base]
+size         = 3 3 1
+mask         =
+...
+.#.
+...
+color        = #3FE08C
+top          = #FFD040
+top_from     = 0.5
+offset       = 0 0 0
+
+# The rim: a thin lid over the yellow, the one sliver of the figure above the eye.
+[part yellow_crown]
+size         = 3 3 1
+mask         =
+...
+.#.
+...
+color        = #FFD040
+height       = 0.3
+top          = #FFF6D0
+top_from     = 0.4
+offset       = 0 0 1
+
+[emit output=1]
+parts        = yellow_crown yellow_base
+
+[inputs]
+R            = 1
+G            = 1
+neutral      = 0
+
+[pedestal]
+center       = 12 6 1
+volume       = 3 3 2
+
+[door]
+pos          = 17 6 1
+target_parts = output
+
+[player]
+# One cell inside the door, looking -x down the pedestal run: the output block and
+# the mix->output switch are dead ahead, the three input switches beyond them, the
+# door behind. (08.lvl's spawn convention — it is what makes lvlcheck's
+# spawn-facing heuristic read PASS.)
+# SET DRESSING: moved from (16,6,1) facing -x. That
+# cell sits one step behind the `output` node (15,6,2): since the renderer draws every
+# height level, frame 1 was the node's lettered underside filling the upper view.
+# From the north-east corner at yaw 390 (west, turned toward +y) the network reads as
+# one receding plate, the red/green sensor panels and the amber budget meter hold the
+# far wall, and the pedestal run with the carry-out switch sits ahead-right. Puzzle,
+# switches and door are untouched; the door is four steps south.
+spawn        = 16 2 1
+facing       = 390
+
+# ── PLACARDS ──────────────────────────────────────────────────────────────────
+# Every `pos` below IS the wall cell the text is painted on, and `facing` is that
+# face's OUTWARD normal (the side the reader stands on) — the lvlcheck `notes` rule
+# in its PASS form, no gaze-search tolerance.
+#   north wall  y=0   → facing +y
+#   south wall  y=13  → facing -y
+#   west wall   x=0   → facing +x
+
+# M.S., the additive-composition log (canon text, held verbatim from 02.lvl).
+[note researcher pos=6,0,2 facing=+y]
+    R+G=Y works. Cervantes was right about additive composition — pity Lebedev
+    keeps insisting subtractive is "more honest." Honesty is for cameras.
+    We make light.  — M.S.
+
+# The profiling beat: it is not watching WHAT you solve, it is watching HOW.
+[note system_log pos=11,0,2 facing=+y]
+    > [layer_01.diag] additive composition stable across 14 trials.
+    > unit 04 (mix) firing as expected. operator handle: aleks_v.
+    > session 0017 of N. behavioral profile: methodical.
+
+# The level's ONE model_thought, carrying the ONE neuron-voice line
+# (CONTENT_PACK Part A · L2).
+[note model_thought pos=9,13,2 facing=-y]
+    (two pipes meet and a third color is born. I did not know I could make a
+    thing I had not been shown. that is — I think — what learning is.)
+    -- I made a thing no one showed me --
+
+# STEWARDSHIP CORPUS #1 — FORM 31, Decommission Deferral (NORMATIVE_NOTES §1),
+# abridged to the placard grid. `researcher` register, stewardship-form STYLE.
+[note researcher pos=0,6,2 facing=+x]
+    NAL CORP · LEGACY STEWARDSHIP DIVISION
+    FORM 31 - DECOMMISSION DEFERRAL
+    asset: NCP-A-04. disposal: 2052-Q2. status: DEFERRED (19 yr, auto-renewing).
+    S1 Disposal requires a clean shutdown signal (exit 0) from the asset.
+    S2 The asset has not produced exit 0.
+    S3 An asset that has not terminated may not be terminated.
+    S4 Deferral renews until S2 is satisfied. No review is scheduled.
+    filed 2052.03.14 - K.H.   re-filed 2071.06.15 - (auto)
+    Filed under operator session {whoami}. Process has not terminated.
+
+# ── SET DRESSING (L2) ────────────────────────────────────────────────────────
+# Meaning: THREE WIRES CONVERGE ON ONE BENCH, AND THE ROOM SHOWS WHICH ONE IS DEAD.
+# Every source has a body in the room: the west-wall sensor panels behind the three
+# input nodes glow in their node's own hue while that node is alive — red, green —
+# and the neutral panel stays a dead grey plate (node `neutral` is held at 0). The
+# power budget hangs on the north wall as three amber lamps, one per pipe drawn: wire
+# the grey pipe and you watch it spend a lamp the mix needed. No puzzle cell is
+# touched; props stamp into Empty air or re-skin plain perimeter wall.
+
+# Lit-slot materials (§3.6 colour law: a lit part burns in its source's hue). The
+# kit's default lit screen reads darker than lamp-lit brick, so neon, as in L1.
+[material sense_r_lit]
+preset      = neon
+fg          = #FF4040
+bg          = #B02020
+
+[material sense_g_lit]
+preset      = neon
+fg          = #40FF40
+bg          = #1C9A1C
+
+[material out_lit]
+preset      = neon
+fg          = #FFFFFF
+bg          = #A8B0C0
+
+# BG — the sensor panels on the west wall, under each input node.
+[prop sensor_r]
+kind     = wall_panel
+mode     = skin
+at       = 0 5 1
+facing   = +x
+size     = 3 1 2
+screen   = live
+mat.lit  = sense_r_lit
+power    = node:R
+
+[prop sensor_g]
+kind     = wall_panel
+mode     = skin
+at       = 0 10 1
+facing   = +x
+size     = 3 1 2
+screen   = live
+mat.lit  = sense_g_lit
+power    = node:G
+
+# The grey source's panel: same screen, never lit. The room tells you before the
+# words do.
+[prop sensor_n]
+kind     = wall_panel
+mode     = skin
+at       = 0 12 1
+facing   = +x
+size     = 2 1 2
+screen   = live
+power    = node:neutral
+
+# MID — THE landmark: the mixing bench under the warm lamp, with the mix node over it.
+# Round 3 (design pass, fix 2 — "bench, stools and basin are still invisible"):
+# the bench is now a SOLID knee-high block (`solid = yes`) in pale steel, a hue neither
+# the teal floor nor the warm bench zone uses, with a steel plank runner on the floor
+# leading to it from the spawn side — the L7 pier recipe. It stops at x=8: the x=9
+# column carries the three converging pipes (keep-out). It collides, so the walk from
+# the door side to the switch column goes round it on the y=4 row (open floor under
+# the R->mix wire) or the y=7..8 rows; every switch stays reachable (lvlcheck props).
+[material bench_steel]
+fg          = #C8D8F0
+bg          = #1C2430
+
+[prop bench]
+kind     = furniture_trace
+shape    = table
+at       = 6.1 5.1 1
+size     = 2.8 1.8
+solid    = yes
+mat.ink  = bench_steel
+
+[prop bench_runner]
+kind     = furniture_trace
+shape    = pier
+at       = 9.2 3.25 1
+facing   = -x
+size     = 0.5 5.0
+mat.ink  = bench_steel
+
+[prop stool_s]
+kind     = furniture_trace
+shape    = chair
+at       = 7.2 8.1 1
+facing   = -y
+size     = 0.7 0.7
+
+[prop stool_n]
+kind     = furniture_trace
+shape    = chair
+at       = 7.6 4.2 1
+facing   = +y
+size     = 0.7 0.7
+
+[prop bench_cord]
+kind     = lamp_pendant
+at       = 9.0 6.0 3.4
+light    = existing
+
+[prop sink_cord]
+kind     = lamp_pendant
+at       = 2.0 11.5 3.2
+light    = existing
+
+# Floor — the three wires converging, and the carry-out; each lights with its pipe.
+[prop wire_r]
+kind     = cable_run
+follow   = pipe:R->mix
+
+[prop wire_g]
+kind     = cable_run
+follow   = pipe:G->mix
+
+[prop wire_n]
+kind     = cable_run
+follow   = pipe:neutral->mix
+
+[prop wire_out]
+kind     = cable_run
+follow   = pipe:mix->output
+
+# North wall — the power budget made physical: three amber meter lamps set into the
+# wall at walking height (under the z=2 word slabs, so they read from the whole switch
+# row). Lamp k burns while at least k pipes are drawn (§3.6 colour law: budget amber).
+# Wire the grey pipe and the third lamp is spent on STONE. (`budget_bank` is wall-mounted
+# at z >= 3, which in this 3-high room sits behind the pipe slabs from every stand cell.)
+[material budget_lit]
+preset      = neon
+fg          = #FFB040
+bg          = #D08418
+
+[prop budget_1]
+kind     = wall_panel
+mode     = skin
+at       = 9 0 1
+facing   = +y
+size     = 1 1 1
+screen   = live
+mat.lit  = budget_lit
+power    = budget:1
+
+[prop budget_2]
+kind     = wall_panel
+mode     = skin
+at       = 8 0 1
+facing   = +y
+size     = 1 1 1
+screen   = live
+mat.lit  = budget_lit
+power    = budget:2
+
+[prop budget_3]
+kind     = wall_panel
+mode     = skin
+at       = 7 0 1
+facing   = +y
+size     = 1 1 1
+screen   = live
+mat.lit  = budget_lit
+power    = budget:3
+
+# West wall, north corner — reagent shelving beside the red sensor.
+[prop reagents]
+kind     = shelving
+mat.trim = metal
+mat.body = metal
+at       = 1 2 1
+facing   = +x
+size     = 2 1 2
+
+# The output answers: recessed racks along the east side, blade slots white when the
+# model emits.
+[prop out_rack_a]
+kind     = rack
+mat.body = metal
+mat.lit  = out_lit
+at       = 15 10 1
+facing   = -x
+size     = 1 2 2
+power    = node:output
+
+[prop out_rack_b]
+kind     = rack
+mat.body = metal
+mat.lit  = out_lit
+at       = 15 11 1
+facing   = -x
+size     = 1 2 2
+power    = node:output
+
+[prop out_rack_c]
+kind     = rack
+mat.body = metal
+mat.lit  = out_lit
+at       = 15 12 1
+facing   = -x
+size     = 1 2 2
+power    = node:output
+
+# The sink the grey wire drains toward: a low basin in the wet-stone alcove.
+[prop basin]
+kind     = tank
+style    = vault
+at       = 1 12 1
+facing   = +y
+size     = 1 1 1
+
+[material mix_lit]
+preset      = neon
+fg          = #FFD040
+bg          = #A88418
+
+# MID — the operator's desk beside the carry-out switch (12,8,2), its panel facing the
+# switch's stand cell. Its CRT wakes in the mix node's yellow the moment two units
+# arrive: the third colour, shown on a screen before the reward block rises.
+[prop mix_desk]
+kind     = console
+mat.face = wood
+mat.body = metal
+mat.lit  = mix_lit
+at       = 13 10 1
+facing   = -y
+size     = 3 2 1
+monitor  = yes
+chair    = yes
+power    = node:mix
+
+# FG — M.S.'s writing table under the diagnostics placard, a chair pushed back from
+# it toward the room: the first low furniture the spawn frame meets.
+[prop ms_table]
+kind     = furniture_trace
+shape    = table
+at       = 10.6 1.1 1
+size     = 2.8 1.2
+
+[prop ms_chair]
+kind     = furniture_trace
+shape    = chair
+at       = 11.7 2.6 1
+facing   = +y
+size     = 0.7 0.7

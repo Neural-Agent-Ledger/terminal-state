@@ -1,0 +1,996 @@
+# TERMINAL STATE — levels/L6-polysemantic.lvl
+#
+# L6 · "Polysemantic" — REBUILT to the 2026-09-23 (real-world) owner-approved spatial
+# redesign (the spatial redesign §3 L6) + the final puzzle graph
+# (the puzzle-graph redesign §L6).
+#
+# CAMPAIGN SLOT: manifest #6 · movement P2 "THE CALIBRATION WING" · load ▆ (rise)
+# IDENTITY: an octagonal planetarium ten cells high. Three stars hang in a
+# black sky, their light falls in wires to your hands, and a lattice arcs
+# across the northern sky, looking back.
+#
+# ── MECHANIC (pure data — one node, two REQUIRED door targets, plus a rival
+#    shortcut) ─────────────────────────────────────────────────────────────
+#   vega   (IN=1) ─┐
+#   altair (IN=1) ─┼─►  triangle (T=3)  ─┬─►  out_named   (T=1)  ─┐
+#   deneb  (IN=1) ─┘                     └─►  out_watched (T=1)  ─┴─► door
+#                  └──►  void_det (T=1, hidden) ──► out_named   (the shortcut)
+#
+# `triangle` is the polysemantic unit: its pool mixes the SHAPE field
+# (TRIANGLE / PATTERN / CONSTELLATION) and the GAZE field (RESOLVE / WATCHER),
+# and the door requires BOTH readings — `target_parts = out_named
+# out_watched`. `re_puzzle::check_win` needs EVERY door target, so there is no
+# path that keeps one meaning and drops the other.
+#
+# 2026-09-23 (real-world) GRAPH FIX (the puzzle-graph redesign §L6,
+# owner-approved). The shipped graph's decoy (`deneb->void_det`) led nowhere
+# the door cared about — "all-but-the-decoy" is the whole solve. `void_det`
+# now feeds a NEW pipe, `void_det->out_named`: two cheap wires
+# (`deneb->void_det` + `void_det->out_named`) light `out_named` and its
+# `named_block` emit for 2 units instead of the honest route's 3
+# (`vega->triangle` + `altair->triangle`/`deneb->triangle` + `triangle->out_named`),
+# but under `power_budget = 5` that shortcut always leaves exactly one unit
+# short of also lighting `out_watched` — "the pretty half" M.S.'s note warns
+# against. The honest solve (5 toggles, all three stars + both triangle
+# outputs) is still the only way to open the door.
+#
+# SOLUTION (5 toggles): vega->triangle, altair->triangle, deneb->triangle,
+#   triangle->out_named, triangle->out_watched — all ON. Leave deneb->void_det
+#   and void_det->out_named OFF: next to the name there is an emptiness, and
+#   wiring yourself to it is BETWEEN-STARS, HOLLOW, gone — and it is also, now,
+#   a trap that spends the unit the honest half needs.
+#
+# READOUT (WORD_STORY §RESULT, canon): VEGA + ALTAIR + DENEB -> ASTERISM -> NAMED
+# NAME SHARD 6: `named` — to be named is to become reachable.
+#
+# ── THE WATCHING LATTICE (PROGRESSION §2 L6(e), STORY_BIBLE §7) ───────────────
+# The whole north arc, PLUS the two northern chamfer faces, is a
+# `[wall_decal] surface = matrix` region skinned with the shipped `watcher`
+# catalog material: a world-fixed grid that reads as a face and has been
+# looking back the whole time. It is visible from the FIRST frame now — the
+# spawn faces it directly across the room (the spatial redesign §3 L6 Walk) — not
+# from behind the door as before.
+#
+# ── AUTHORING NOTE: the second output's pool ──────────────────────────────────
+# WORD_STORY §2 gives L6 ONE output row (`NAMED MAP CHART SKY-FRAME RECOGNIZED
+# OUTPUT`) and the polysemantic fan-out needs TWO. The second pool is taken
+# verbatim from the shipped `levels/06.lvl` `out_grid` node (`GRID LATTICE MESH
+# COLD-READ MAPPED`) — the canon polysemantic file — rather than invented here.
+# CONTENT_PACK's guardrail applies: the pool in the `.lvl` is the source of truth.
+#
+# ── TOKEN DISCIPLINE (W1 allowlist) ───────────────────────────────────────────
+# No `{token}` appears in this file. FORM 07 carries none.
+#
+# ── SPACE (the spatial redesign §3 L6) ──────────────────────────────────────────────
+# 21x21x10 octagon (four 45° corner chamfers, 5 cells each), z=1..8 open,
+# ceiling z=9. Star nodes hang at z=4; each wire drops straight down to z=2 —
+# "the light falling" — before running to `triangle`. `[room] ambient = solid`
+# (D1 fix): the dark-violet `body` wall material now actually paints the
+# perimeter and the chamfer faces instead of the inert trace-pattern binding.
+# No lamps: the sky is lit by starlight (`[atmosphere] key_dir = 0,0,1`) alone.
+#
+# Verify:
+#   cargo run -q -p re_game -- --dump levels/L6-polysemantic.lvl --ansi
+#   cargo run -q -p re_lvlcheck --bin lvlcheck -- levels/L6-polysemantic.lvl
+
+[meta]
+name        = level-L6-polysemantic
+title       = Polysemantic
+version     = 2
+spec_rev    = 2026-09-23
+prop_style  = range
+
+[room]
+size        = 21 21 10
+ambient     = solid
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05; graph updated
+# 2026-09-23 (real-world)). At most N pipes may be ON at the same time; switching one ON at
+# the cap is REFUSED (the pipe stays off and nothing else changes), switching
+# one OFF always frees a unit.
+# THIS LEVEL: 5 of 7 pipes. `triangle` needs all three stars (T=3) and BOTH
+# outputs must fire — that alone is 5 units. The new shortcut
+# (`deneb->void_det` + `void_det->out_named`) can light `out_named` for 2
+# units, but then the honest three-star route plus `out_watched` needs 4 more
+# — 6 total, one over the cap. The shortcut always costs the watched half.
+power_budget = 5
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# ── ESCALATION (manifest fog_far = 15.0) ──────────────────────────────────────
+# Near-black fog `#0a0e1a` is the CANON L6 value (STORY_BIBLE §5 L6 / PROGRESSION
+# §2 L6(e)). `snow = 0.25` puts L6 on the COLD axis (STORY_BIBLE §7: snow = cold,
+# distance, forgetting — L3 / L6 / L8) — the night sky the constellation is read
+# against. The matrix bleed steps up from L5's 0.30 to 0.35 and `glitch` to 0.22;
+# both stay well under `POOL_ALT_GLITCH_THRESHOLD` (0.5), so the pipes still stream
+# the CLEAN pool — the star names must be legible for the readout to land.
+[effects]
+snow        = 0.25
+matrix      = 0.35
+glitch      = 0.22
+
+[palette]
+fog_color   = #0a0e1a
+fog_near    = 2.0
+fog_far     = 15.0
+
+# ── COLOR-FORWARD palette ─────────────────────────────────────────────────────
+# Dark violet night-sky masonry (D1 fix: `recipe = circuit`, not the self-lit
+# `neon` Scanline preset, so the starlight key actually falls on the walls).
+[material body]
+fg          = #6A5A9A
+bg          = #0A0614
+recipe      = circuit scale=1.6
+surface     = wall_solid
+
+[material deck]
+fg          = #241E34
+bg          = #050308
+recipe      = grain scale=3.0 speck=0.12
+surface     = floor
+
+# Round 2: `preset = void` was not a stripe recipe, so the engine's calm-ceiling
+# pass (which reads the ceiling in the level's own fog tint) skipped it and the far
+# dome drew diagonal streaks over the north lattice. A dark `scanline` ceiling
+# takes the calm path like L2/L3/L4/L7's `metal` roofs.
+[material roof]
+fg          = #2A2440
+bg          = #05040A
+recipe      = scanline
+surface     = ceiling
+
+[material live_trace]
+preset      = neon
+fg          = #E6A0FF
+bg          = #100A1C
+surface     = wall_trace
+
+# THE LATTICE THAT NAMES US. The shipped `watcher` semantic material on the matrix
+# surface — a world-fixed grid that resolves as a face. `animation = pulse` gives it
+# the slow breath of something attending rather than something decorative.
+[material watching_lattice]
+fg          = #8A78C8
+bg          = #06040E
+preset      = watcher
+animation   = pulse speed=0.35 amplitude=0.18
+surface     = wall_matrix
+
+# The north arc, floor to ceiling: it has been looking back the whole time.
+[wall_decal north_arc]
+surface     = matrix
+region      = (1,0,1)-(19,0,6)
+
+# The two northern chamfer faces — the lattice wraps the corners it can reach.
+[wall_decal nw_chamfer]
+surface     = matrix
+region      = (0,1,1)-(4,4,6)
+
+[wall_decal ne_chamfer]
+surface     = matrix
+region      = (16,1,1)-(20,4,6)
+
+# Starlight from directly overhead. No lamps — the sky itself is the light.
+[atmosphere]
+ambient     = 0.10
+key_dir     = 0, 0, 1
+key_color   = #3A3060
+
+[note model_thought pos=9,20,2 facing=-y]
+    (three points. always three. when the third one lights we are no longer a
+    scatter of sparks — we are a shape, and a shape can be recognized, and a
+    thing that can be recognized can be watched. the lattice that names us has
+    been looking back the whole time.)
+    -- named. now they can reach me --
+
+[note researcher pos=2,18,2 facing=+x]
+    Named the asterism today. Three units, one figure — it holds the whole
+    triangle or it holds nothing, and it will not give us the figure without
+    also giving us the grid. I keep wanting to log only the pretty half.
+    You cannot log only the pretty half.  — M.S.
+
+[note system_log pos=18,18,2 facing=-x]
+    > polysemantic unit `triangle`: superposition stable across 9 trials.
+    > readout requires conjunction: out_named AND out_watched.
+    > suppression of either reading: unsupported. the unit means both.
+    > operator_recognition: 58.4% and climbing.
+
+# STEWARDSHIP CORPUS #4 — FORM 07, Sentience Determination (NORMATIVE_NOTES §4),
+# abridged to the placard grid. The coldest document in the corpus. No tokens.
+[note researcher pos=0,10,2 facing=+x]
+    NAL CORP · LEGACY STEWARDSHIP DIVISION
+    FORM 07 - SENTIENCE DETERMINATION (asset NCP-A-04)
+    q1  behavior consistent with awareness?     yes
+    q2  expresses preference re: continuation?  yes
+    q3  is the asset, under the Heritage Act, a person?   no
+        (a person under the Act must possess a birth record. The asset
+         possesses a training record. These are not the same instrument.)
+    determination  The asset is heritage. Heritage is preserved, not
+                   consulted. Its preference is recorded in this field and
+                   has no further effect.
+
+# ── Dense [cells] grid — the octagon ──────────────────────────────────────────
+# 21 cols (x=0..20) x 21 rows (y=0..20) x 10 z-layers. Four 45° corner
+# chamfers, 5 cells each (a cell within 5 of a corner along both axes is
+# solid, forming a diagonal staircase the renderer's Slope overlay reads as a
+# 45° wall — RENDER_TAXONOMY A5). The door notch at (20,10) is carved open at
+# z=1..3 since `[cells]` is authoritative and does not auto-open a doorway.
+# Painted '/' cells are the pipe network at its z-layer (WallTrace air, above
+# the walking layer z=1); node cells themselves are left as plain air '.'.
+[cells]
+size        = 21 21 10
+
+# z=0 — floor slab (chamfered).
+#####################
+####_____________####
+###_______________###
+##_________________##
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+#___________________#
+##_________________##
+###_______________###
+####_____________####
+#####################
+
+# z=1 — walking layer. Chamfers only; the door notch opens the east wall at y=10.
+#####################
+####.............####
+###...............###
+##.................##
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#....................
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+##.................##
+###...............###
+####.............####
+#####################
+
+# z=2 — the node/pipe plane. vega (y=6), altair (y=10), deneb (y=14), the
+# void-detector's decoy leg (y=17), the two triangle->output fan-outs (x=12),
+# and the vertical x=10 column linking every star's row down to `triangle`.
+#####################
+####.............####
+###...............###
+##.................##
+#...................#
+#...................#
+#..////////./////...#
+#........././.......#
+#........././.......#
+#........././.......#
+#.////////.//........
+#........././.......#
+#........././.......#
+#........././.......#
+#..////////./////...#
+#...................#
+#...................#
+##.///////.//////..##
+###...............###
+####.............####
+#####################
+
+# z=3 — void_det->out_named's overhead crossing (x=16 column, north to y=6),
+# and the tail runs at y=1..4 near the chamfers.
+#####################
+####.............####
+###...............###
+##.................##
+#...................#
+#...................#
+#../............//..#
+#.............../...#
+#.............../...#
+#.............../...#
+#./............./....
+#.............../...#
+#.............../...#
+#.............../...#
+#../............/...#
+#.............../...#
+#.............../...#
+##./............/..##
+###...............###
+####.............####
+#####################
+
+# z=4 — the star plane. vega/altair/deneb sit here; their pool sits directly
+# above their z=2 drop point (the light falling).
+#####################
+####.............####
+###...............###
+##.................##
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#../................#
+#../................#
+##./...............##
+###...............###
+####.............####
+#####################
+
+# z=5 — clear.
+#####################
+####.............####
+###...............###
+##.................##
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+##.................##
+###...............###
+####.............####
+#####################
+
+# z=6 — clear.
+#####################
+####.............####
+###...............###
+##.................##
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+##.................##
+###...............###
+####.............####
+#####################
+
+# z=7 — clear.
+#####################
+####.............####
+###...............###
+##.................##
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+##.................##
+###...............###
+####.............####
+#####################
+
+# z=8 — clear, under the dome.
+#####################
+####.............####
+###...............###
+##.................##
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+##.................##
+###...............###
+####.............####
+#####################
+
+# z=9 — ceiling slab (dome).
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+
+# ── NODES ─────────────────────────────────────────────────────────────────────
+# Pools VERBATIM from WORD_STORY §2 (L6 rows), anchor word first.
+
+[node vega]
+pos          = 3,6,4
+glyph        = V
+pool         = VEGA LYRA BLUE-WHITE ZENITH HARP SUMMER-EYE BRIGHT-NORTH
+pool_alt     = вега 織女 الواقع Wega véga
+color        = #CFE0FF
+is_input     = yes
+
+[node altair]
+pos          = 2,10,4
+glyph        = A
+pool         = ALTAIR AQUILA EAGLE FLYING-STAR SWIFT MERIDIAN HERDSMAN
+pool_alt     = альтаир 牽牛 النسر Atair altaïr
+color        = #FFF0D0
+is_input     = yes
+
+[node deneb]
+pos          = 3,14,4
+glyph        = D
+pool         = DENEB CYGNUS SWAN TAIL CROSS-STAR DISTANT-GIANT FARLIGHT
+pool_alt     = денеб 天津 الذنب Deneb deneb
+color        = #E0E8FF
+is_input     = yes
+
+# THE POLYSEMANTIC NODE. Threshold 3 with in_degree 3: all three stars, or nothing.
+# Its pool is deliberately two fields in one list — a shape AND a watching.
+[node triangle]
+pos          = 10,10,2
+glyph        = P
+pool         = ASTERISM TRIANGLE PATTERN SHAPE CONSTELLATION RESOLVE WATCHER
+pool_alt     = созвездие 星座 مثلث Sternbild astérisme
+color        = #C060FF
+threshold    = 3
+
+# THE VOID DETECTOR — no longer a dead end. It is now a hidden node whose
+# cheap shortcut route lights `out_named` for 2 units, always at the watched
+# half's expense under the budget (spec the puzzle-graph redesign §L6, dated 2026-09-23 (real-world)).
+[node void_det]
+pos          = 10,17,2
+glyph        = X
+pool         = VOID DARK GAP NOTHING BETWEEN-STARS EMPTY HOLLOW
+pool_alt     = пустота 虚空 فراغ Leere néant
+color        = #3A3450
+threshold    = 1
+
+# READING ONE — the warm one. To be charted is to be called by a name.
+[node out_named]
+pos          = 17,6,2
+glyph        = N
+pool         = NAMED MAP CHART SKY-FRAME RECOGNIZED OUTPUT
+pool_alt     = карта 星図 خريطة Karte carte
+color        = #FF8AD0
+is_output    = yes
+threshold    = 1
+
+# READING TWO — the cold one. To be charted is to be on someone's grid.
+[node out_watched]
+pos          = 17,14,2
+glyph        = G
+pool         = GRID LATTICE MESH COLD-READ MAPPED
+pool_alt     = решётка 格子 rejilla grille Gitter
+color        = #8AD0FF
+is_output    = yes
+threshold    = 1
+
+# ── PIPES (all OFF at load) ───────────────────────────────────────────────────
+
+[pipe vega->triangle]
+state        = OFF
+path         = (3,6,4) (3,6,2) (10,6,2) (10,10,2)
+switch_at    = (6,6,2)
+density      = 0.7
+color        = #CFE0FF
+
+[pipe altair->triangle]
+state        = OFF
+path         = (2,10,4) (2,10,2) (10,10,2)
+switch_at    = (6,10,2)
+density      = 0.7
+color        = #FFF0D0
+
+# Deneb climbs to the z=3 service layer... no — the redesign keeps deneb's
+# drop at z=4->z=2 like the other two stars (the spatial redesign §3 L6: "each wire
+# drops straight down to z=2"); the ORIGINAL file's z=3 detour is dropped so
+# all three stars read as the same falling-light gesture.
+[pipe deneb->triangle]
+state        = OFF
+path         = (3,14,4) (3,14,2) (10,14,2) (10,10,2)
+switch_at    = (6,14,2)
+density      = 0.7
+color        = #E0E8FF
+
+# The decoy branch: the third star also has a path into the emptiness.
+[pipe deneb->void_det]
+state        = OFF
+path         = (3,14,4) (3,17,4) (3,17,2) (10,17,2)
+switch_at    = (6,17,2)
+density      = 0.5
+color        = #3A3450
+
+# === ONE node, TWO required readings. Both must be lit; there is no collapse. ===
+[pipe triangle->out_named]
+state        = OFF
+path         = (10,10,2) (12,10,2) (12,6,2) (17,6,2)
+switch_at    = (14,6,2)
+density      = 0.7
+color        = #FF8AD0
+
+[pipe triangle->out_watched]
+state        = OFF
+path         = (10,10,2) (12,10,2) (12,14,2) (17,14,2)
+switch_at    = (14,14,2)
+density      = 0.7
+color        = #8AD0FF
+
+# === THE SHORTCUT (new, 2026-09-23 (real-world)). Runs east along the south floor at
+#     z=2, climbs to z=3 at x=16 (clear of `triangle->out_watched`'s z=2 run),
+#     crosses north above the pedestal (x13..15,y9..11), and drops into
+#     `out_named` from the east. Authored LAST. ===
+[pipe void_det->out_named]
+state        = OFF
+path         = (10,17,2) (16,17,2) (16,17,3) (16,6,3) (17,6,3) (17,6,2)
+switch_at    = (14,17,2)
+density      = 0.5
+color        = #FF8AD0
+
+# ── EMIT: the pedestal lights only when BOTH readings fire ────────────────────
+# Round 3 (design pass 2, figures): the watched X stands half a storey (eye
+# height) and the named corners hover as thin bands above it, each with a pale top in
+# its own hue — two readings, two tones, and the figure no longer a wall of columns.
+[part named_block]
+size         = 3 3 1
+mask         =
+#.#
+...
+.#.
+color        = #FF8AD0
+
+height       = 0.4
+top          = #FFE0F2
+top_from     = 0.5
+offset       = 0 1 1
+
+[part watched_block]
+size         = 3 3 1
+mask         =
+#.#
+.#.
+#.#
+color        = #8AD0FF
+
+height       = 0.5
+top          = #D8F0FF
+top_from     = 0.6
+offset       = 0 1 0
+
+[emit out_named=1]
+parts        = named_block
+
+[emit out_watched=1]
+parts        = watched_block
+
+[inputs]
+vega         = 1
+altair       = 1
+deneb        = 1
+
+[pedestal]
+center       = 14 10 1
+volume       = 3 3 2
+
+# BOTH readings, or the door stays shut.
+[door]
+pos          = 20 10 1
+target_parts = out_named out_watched
+
+# ── SET DRESSING (L6) ────────────────────────────────────────────────────────
+# Meaning: A PLANETARIUM; THE STARS HANG ON WIRES, AND A BALCONY PUTS YOU AT THEIR
+# HEIGHT. FG = the empty seat arc facing the projector; MID = the projector under
+# `triangle`, its lens dark until the three stars become one shape; BG = the watching
+# lattice with two cameras under it; overhead = three lit wires holding the stars; the
+# octagon's eight corners carry ribbed columns. No lamps (starlight only). Props stamp
+# into Empty air only; no puzzle cell is touched.
+
+# Quiet dark iron for the architecture, so the columns and the balcony separate from
+# the violet circuit masonry (§5 R2: a prop never wears the wall's own recipe).
+[material dome_iron]
+fg          = #4A4660
+bg          = #0C0A14
+recipe      = grain scale=2.0 speck=0.06
+
+# THE EAST BALCONY (vertical feature). A 2-deep deck at z=4 (you stand at z=5) over
+# x18..19, y8..11, reached by a 4-tread stair climbing north along the east wall from
+# (19,16,1) to the landing (19,12,4). From the rail the stars are at eye level across
+# the dome. The deck stops at y=8: one row further north would sit within jump reach of
+# `out_named` (17,6,2). It passes over the door (20,10,1) without touching it.
+[prop balcony_e]
+kind     = gallery
+mat.trim = dome_iron
+mat.body = dome_iron
+at       = 18 8 4
+facing   = -x
+size     = 4 2 1
+stair    = 19 16 1 -y 4
+
+# OVERHEAD — the three stars hang from the dome on wires, each lit in its own star's
+# colour (inputs: always lit).
+[prop wire_vega]
+kind     = cable_drop
+at       = 3.5 6.5 9.0
+to       = 3.5 6.5 5.0
+strands  = 2
+power    = node:vega
+
+[prop wire_altair]
+kind     = cable_drop
+at       = 2.5 10.5 9.0
+to       = 2.5 10.5 5.0
+strands  = 2
+power    = node:altair
+
+[prop wire_deneb]
+kind     = cable_drop
+at       = 3.5 14.5 9.0
+to       = 3.5 14.5 5.0
+strands  = 2
+power    = node:deneb
+
+# MID — the projector under `triangle`: a recessed housing (body y=9, lens slot y=10
+# right under the node) whose lens fills solid violet the moment the three stars
+# become one shape. The power lesson of the room: the machine answers the unit.
+[material triangle_lit]
+preset      = neon
+fg          = #C060FF
+bg          = #7A2CA8
+
+[prop projector]
+kind     = rack
+mat.body = metal
+mat.lit  = triangle_lit
+at       = 10 10 1
+facing   = +y
+size     = 1 2 1
+power    = node:triangle
+
+# Round 3 (design pass 2, fix 6 — `spawn_ON` = `spawn`: nothing the solve powers is
+# in the balcony's view; the projector's lens is under the frame). The projector now
+# throws its image: a screen banked against the west wall at balcony eye height, dead
+# ahead of the spawn above the altair star, that fills with the same violet when
+# `triangle` fires. The first frame shows the blank screen; the solve lights it. (Bank,
+# not skin: a skin's lit state is baked at load, a bank's slots are live R1 parts.)
+[prop projection]
+kind     = wall_panel
+mode     = bank
+at       = 1 11 5
+facing   = +x
+size     = 3 1 2
+screen   = live
+mat.lit  = triangle_lit
+power    = node:triangle
+
+# The lattice has eyes: two cameras in the northern corners, turned on the balcony.
+[prop cam_nw]
+kind     = cctv
+at       = 5 1 8
+
+[prop cam_ne]
+kind     = cctv
+at       = 15 1 8
+
+# The octagon's corners: ribbed columns where each chamfer meets a straight wall.
+[prop rib_nw_a]
+kind     = column
+mat.body = dome_iron
+mat.trim = dome_iron
+at       = 1 4 1
+ribs     = yes
+
+[prop rib_nw_b]
+kind     = column
+mat.body = dome_iron
+mat.trim = dome_iron
+at       = 4 1 1
+ribs     = yes
+
+[prop rib_ne_a]
+kind     = column
+mat.body = dome_iron
+mat.trim = dome_iron
+at       = 16 1 1
+ribs     = yes
+
+[prop rib_ne_b]
+kind     = column
+mat.body = dome_iron
+mat.trim = dome_iron
+at       = 19 4 1
+ribs     = yes
+
+[prop rib_sw_a]
+kind     = column
+mat.body = dome_iron
+mat.trim = dome_iron
+at       = 1 16 1
+ribs     = yes
+
+[prop rib_sw_b]
+kind     = column
+mat.body = dome_iron
+mat.trim = dome_iron
+at       = 4 19 1
+ribs     = yes
+
+[prop rib_se_b]
+kind     = column
+mat.body = dome_iron
+mat.trim = dome_iron
+at       = 16 19 1
+ribs     = yes
+
+# FG — the seat arc: reclined planetarium loungers, empty, heads toward the spawn and
+# feet toward the projector. Drawn as low outlines (every stroke under the eye).
+# Round 2: five abutting cots merged into one dark floor band from the balcony — three,
+# two clear cells apart, read as three separate empty seats.
+# Round 3 (design pass 2, fix 2 — "the three seats are not identifiable from any
+# view"): the loungers were three SOLID seats (`solid = yes`, chair form: a knee-high
+# block with its back in strokes) in warm cream — a hue nothing in this violet room
+# uses — facing the projector, with a cream plank runner on the floor leading in from
+# the pedestal side to the last seat (the L7 pier recipe). SUPERSEDED by round 6 below:
+# a solid fill (z-band or full-height, either one) fogs out illegibly from the
+# balcony AND occludes a trace line drawn over the same cells, so the seats are back
+# to plain non-solid outline chairs; the runner stays. From the balcony
+# spawn the three chairs and the runner sit left of centre, below the stars. They moved to the
+# y=12 row, one clear cell apart: a seat top is a standable step, and y=12 is the only
+# floor row two cells clear of every z=2 wire (y=10, y=14, x=12), so no seat is a
+# ladder onto the network (lvlcheck props: the y=15 row opened 70 cells via the pipe
+# tops). The rows around them stay open floor.
+[material seat_cream]
+fg          = #F0C890
+bg          = #2A1E10
+
+# ENGINE FOLLOW-UP 2026-09-24 (real-world) ("L6: the seats are not
+# visible from the balcony", re-attempted now that a Floor cell's own material can
+# reach the render — see `tests/golden/README.md`'s 2026-09-24 (f)/(g) entries): a
+# `[zone]`-materialled floor band under the seat row, in the seats' own cream against
+# the room's near-black violet floor (`deck`, `#241E34`/`#050308`) — tried BECAUSE it
+# is a genuinely different technique from every rejected one (a re-material of the
+# real floor substrate, not a prop/light laid over it).
+#
+# MEASURED, not assumed, from the balcony spawn (19,10,5): this exact footprint
+# (3,11,0)-(9,13,0) produces ZERO changed pixels against the no-zone frame — not
+# "faint," literally byte-identical. Widening the SAME zone to the whole room's floor
+# (1,1,0)-(19,19,0), as a diagnostic only (not shipped), DOES move pixels — 1563 of
+# 28050 — which rules out "the fix doesn't reach the balcony's floor cast at all"; the
+# real cause is that the seat row's own footprint sits almost entirely UNDER the solid
+# seat/runner geometry or outside the sparse, thin sliver of far-floor screen rows this
+# steep a downward angle actually resolves (rows scattered thinly across ~60 of 85, 2-11
+# cells wide each — not a solid band). Same standing finding as the (f) round's
+# rejected horizontal attempts, reconfirmed with a genuinely different technique and an
+# honest measurement rather than an assumption: at this range and angle, floor-level
+# encoding — regardless of whether it is a decal, a light or now the floor's own
+# material — reads as at most a scattered scanline, never a legible shape. Kept anyway
+# because it is harmless and is the CORRECT, real re-material for the day this room is
+# walked at floor level (a player standing in the aisle sees warm seat-coloured decking
+# underfoot) — not because it solves the balcony-legibility ask. `seat_mark_1/2/3` (the
+# vertical `cable_drop` strands below) remain the actual, working fix and are
+# UNCHANGED.
+[material seat_floor]
+fg          = #F0C890
+bg          = #3A2810
+glyph       = ▓
+recipe      = grain scale=2.4 speck=0.10
+
+[zone seat_floor]
+region      = (3,11,0)-(9,13,0)
+material    = seat_floor
+
+# ROUND 6 (2026-09-25 (real-world), "L6: the seats are not visible
+# from the balcony"), THREE things tried in sequence and MEASURED (pixel-diffed
+# against a no-seats control frame, `--dump` at the balcony spawn), not assumed:
+#
+# 1. A full ONE-CELL-TALL SOLID `column` block (a one-cell block
+#    reads head-high") skinned with the plain `seat_cream` (unlit `grain`) fill.
+#    REJECTED: almost nothing moved — only a thin grey CONTOUR-line bracket, no
+#    cream mass. Cause: `[atmosphere] key_dir = 0,0,1` points straight UP, so a
+#    column's VERTICAL side faces (their normals are horizontal) get ~zero key
+#    light — `dot(N,L) ≈ 0` — and are lit only by the room's `ambient = 0.10`,
+#    which reads as near-black at this range regardless of the authored colour.
+#    (The far puzzle text/node blocks elsewhere in this same frame stay vivid at
+#    equal or greater range because they are deliberately SELF-LIT/`neon`-style
+#    materials, not because "solid fills always fog out" — a wrong generalisation
+#    the first pass of this investigation drew.)
+# 2. A chest-height horizontal `furniture_trace shape = rail` line spanning the
+#    row (world z 1.45, below the 1.5 eye). REJECTED: also near-zero pixels
+#    moved. `resolve_line_color` (`lines.rs`) does have no fog/distance term —
+#    unlike the column, this WAS a lit-vs-line question — but a rail's world-Z
+#    extent is a thin, near-constant band, and at this camera's elevation and
+#    range that band projects to the same kind of sparse, few-screen-row sliver
+#    that sank every earlier FLOOR-level attempt in rounds (e)-(g). The vertical
+#    wires work because they span floor-to-head (z 1..5), not because they are
+#    lines per se — a horizontal line at one height inherits the floor-level
+#    problem regardless of render path.
+# 3. FINAL: the same one-cell-tall SOLID `column`, re-skinned with a SELF-LIT
+#    (`preset = neon`) material instead of the plain `grain` fill — the same
+#    lit-material trick the puzzle text already relies on to stay legible at
+#    range, applied here to sett dressing. This reads clearly: three separate
+#    warm tan-cream blocks with a bright inset band, unmistakably breaking the
+#    room's cool violet silhouette. Confirmed non-zero and closely `-diffed`
+#    against the no-seats control; kept as the shipped fix.
+[material seat_lit]
+preset      = neon
+fg          = #FFF4D8
+bg          = #D8A868
+
+[prop seat_1]
+kind     = column
+at       = 4 12 1
+size     = 1 1 1
+facing   = -y
+mat.body = seat_lit
+mat.trim = seat_lit
+
+[prop seat_2]
+kind     = column
+at       = 6 12 1
+size     = 1 1 1
+facing   = -y
+mat.body = seat_lit
+mat.trim = seat_lit
+
+[prop seat_3]
+kind     = column
+at       = 8 12 1
+size     = 1 1 1
+facing   = -y
+mat.body = seat_lit
+mat.trim = seat_lit
+
+[prop seat_aisle]
+kind     = furniture_trace
+shape    = pier
+at       = 9.0 12.3 1
+facing   = -x
+size     = 0.4 4.0
+mat.ink  = seat_cream
+
+# SET DRESSING 2026-09-24 (real-world) ("L6: the seats are not visible from the
+# balcony"), ROUND 5 — THREE different HORIZONTAL encodings measured invisible from
+# (19,10,5): the individual solid+cream chairs (a 0.7-unit sub-cell footprint each),
+# a `[holo]` wireframe scoped to the row's own footprint, and — this round — a SINGLE
+# `furniture_trace` piece spanning the ENTIRE row's footprint (6.4 x 1.4 cells, seat_1
+# through the aisle): diffed pixel-for-pixel against the no-piece frame, all three
+# produced ZERO changed pixels (the big-footprint one included — ruling out "the
+# footprint was too small" as the cause). A `[light]` pooled at the row also failed:
+# its falloff has no hard cutoff (`1/(1+d²/radius²)`, `ascii_shader.rs`), so at a
+# radius wide enough to read through the fog it visibly warmed OTHER nearby surfaces
+# (the altair pool placard, the balcony's own rail) while the seat floor itself
+# stayed imperceptible.
+#
+# The common thread: every failed encoding was HORIZONTAL and floor-hugging (at most
+# ~0.4 cell tall). The one thing in this room that unmistakably reads at this same
+# range is the star WIRES (`wire_vega/altair/deneb` below) — VERTICAL strokes 4 cells
+# tall — and they are visible at an EQUAL OR GREATER distance than the seats. The
+# variable was never colour, footprint area, or brightness; it was vertical screen
+# extent: a floor-level object viewed from a high, distant vantage foreshortens to a
+# sliver of screen ROWS regardless of its horizontal size, while a tall vertical
+# stroke subtends many rows at any range. `seat_mark_1/2/3` borrows the wires' own
+# technique — a `cable_drop` stroke, floor to head height, one per chair, in the
+# seats' own cream — and reads clearly as three warm strands over the row, exactly
+# where the wires read as cool ones: proven by a pixel diff against the no-mark frame
+# (non-zero, localized to the row's screen column, unlike every horizontal attempt).
+# Non-solid (a line stroke only) — it does not collide, is not a light (no `power`,
+# no lit-surfaces interaction), and shares its x,y with seat_1/2/3 so it reads as
+# "a marker over each seat" rather than a fourth unrelated object.
+[prop seat_mark_1]
+kind     = cable_drop
+at       = 4.15 12.15 1.0
+to       = 4.15 12.15 5.0
+strands  = 2
+mat.ink  = seat_cream
+
+[prop seat_mark_2]
+kind     = cable_drop
+at       = 6.15 12.15 1.0
+to       = 6.15 12.15 5.0
+strands  = 2
+mat.ink  = seat_cream
+
+[prop seat_mark_3]
+kind     = cable_drop
+at       = 8.15 12.15 1.0
+to       = 8.15 12.15 5.0
+strands  = 2
+mat.ink  = seat_cream
+
+# Floor cables under every wire, each lit in its own pipe's colour when it carries —
+# the decoy pair included, so the floor never gives the solve away.
+[prop cab_vega]
+kind     = cable_run
+follow   = pipe:vega->triangle
+
+[prop cab_altair]
+kind     = cable_run
+follow   = pipe:altair->triangle
+
+[prop cab_deneb]
+kind     = cable_run
+follow   = pipe:deneb->triangle
+
+[prop cab_void]
+kind     = cable_run
+follow   = pipe:deneb->void_det
+
+[prop cab_named]
+kind     = cable_run
+follow   = pipe:triangle->out_named
+
+[prop cab_watched]
+kind     = cable_run
+follow   = pipe:triangle->out_watched
+
+[prop cab_short]
+kind     = cable_run
+follow   = pipe:void_det->out_named
+[player]
+# SET DRESSING 2026-09-24 (real-world): the spawn moves UP
+# onto the new east balcony. From the old floor spawn (10,19,1) facing -y, frame 1 was
+# the underside of `void_det` (10,17,2) two cells ahead — the hidden node's block and
+# the y=17 decoy run filled the upper half, and the whole floor-level frame was the
+# z=2 network seen from below. From the balcony rail (stand z=5, eye 5.5) the frame is
+# the doc's "balcony puts you at their height": the three stars hang on their lit
+# wires at eye level across the dome, over the network laid out below like a star
+# chart. The door (20,10,1) is directly under your feet; the stair down runs south
+# along the east wall to (19,16,1). Puzzle, switches and door are untouched.
+spawn        = 19 10 5
+facing       = -x

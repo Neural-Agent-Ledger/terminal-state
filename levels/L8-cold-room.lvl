@@ -1,0 +1,644 @@
+# TERMINAL STATE — levels/L8-cold-room.lvl
+#
+# L8 · "The Cold Room" — the story-true successor to levels/08.lvl (which stays in
+# the ARCHIVE folder, golden and untouched).
+#
+# ── SPATIAL REDESIGN (2026-09-23 (real-world), the spatial redesign §3 L8 +
+#    the puzzle-graph redesign §L8) ────────────────────────────────
+# The puzzle graph is UNCHANGED (the puzzle-graph redesign §L8: "B unchanged — A differs
+# only in node names"): same six nodes, same positions, same pipes, same switches,
+# same power_budget, same solution. What changed is the ROOM: two full-height
+# shelving rows (aisles) now stand between the three input lanes and the middle
+# aisle, with gaps painted exactly where a pipe already crossed the line (invariant
+# 1 — never let architecture hide a pipe trace). `ambient` flips trace-pattern ->
+# solid (D1 fix) so the authored `shell` wall material actually paints the room
+# instead of the room reading as one shared `live_trace` shell; `shell` is
+# authored as an explicit `circuit` recipe (not `preset = ice`), so it does not
+# become a mirror. A warm bulb lights the cat aisle, a frosted-locker relief skins
+# the shelf faces, and the coat note moves from the far west wall to beside the
+# door it names (fixing D6 — "on a hook by the door" is now true).
+#
+# CAMPAIGN SLOT: manifest #8 · movement P3 "The Phantom Sister"
+#                load ▄ — **BREATHER** (relief after PEAK 1; warm -> cold)
+# NEW IDEA (exactly one): **the dead node** — a unit that is not off, it is
+#   permanently unreachable. You do not fix it. You route around it.
+#   "The network has scars. I don't fix them; I go around."
+#
+# ── MECHANIC (plan W2 2.2, PLAN A — data-only, no engine change) ──────────────
+#   ear     (IN=1) ─┬─►  face_07 (T=99, DEAD) ──►  output      the obvious path
+#   eye     (IN=1) ─┘         ^ can never fire
+#   ear     (IN=1) ─┬─►  cat     (T=2)         ──►  output      the route-around
+#   whisker (IN=1) ─┘
+#
+# `face_07` has threshold 99 and in_degree 2: its inputs sum to at most 2, so no
+# combination of switches can ever light it. There is NO `dead = true` key in
+# `re_level` and none is added — the flag PROGRESSION §6 lists as ✅ does not exist
+# (plan R4 already recorded that). The scar is authored as an UNREACHABLE THRESHOLD,
+# and the door never needs it: `target_parts = output`, and `output` is reachable
+# through `cat` alone. So "route around it" is a real solve, not a hint.
+#
+# DEAD-BY-DESIGN, MACHINE-CHECKED. `re_lvlcheck`'s `thresholds` rule (added with this
+# level) reads: for every non-input node, `0 < threshold <= in_degree`, OR the node
+# is DEAD BY DESIGN — `threshold > in_degree` AND the node is not itself a door
+# target. `face_07` satisfies the second clause and the rule reports it by name, so a
+# reviewer sees the scar declared instead of discovering it. A typo-dead node that
+# actually blocked the win would still be caught: it would be a door target (rule
+# FAILs) or it would make the level UNSOLVABLE (the `solvable` check FAILs).
+#
+# BRUTE-FORCE CAP (plan 2.2's required check). 6 switchable pipes ⇒ 2^6 = 64 forward
+# passes, far under `re_puzzle::SOLVE_MAX_PIPES` (20 pipes / ~1M passes). The
+# unreachable node costs the solver nothing: it is one extra topo node whose
+# activation is always 0. lvlcheck reports SOLVABLE with an exact minimum — the
+# solver does NOT degrade, so the net does not need shrinking.
+#
+# SOLUTION (3 toggles): ear->cat, whisker->cat, cat->output — all ON.
+#   Every `face_07` pipe stays dark. PROGRESSION §2 L8(c): this is LETHE's kindest
+#   level. The dead node is a memory already mercifully gone, and the whole solve
+#   honours a forgetting. After L7's loop-dread, forgetting can be peace.
+#
+# SOLVE PROXIES (plan §6, breathers): min-toggle 3 (cap 4).
+# NAME SHARD: none. The name completed at L7; L8 adds nothing and re-reads nothing.
+# The dead unit is a letter someone already chose to let go, and you honour the
+# absence rather than re-light it.
+#
+# READOUT (CONTENT_PACK Part B · L8): EAR + EYE + WHISKER -> CAT -> OUTPUT
+#   (the clean reading routes ear + whisker; `eye` is offered to the scar and is the
+#    unit you can afford to leave unspent.)
+# EXIT WORD (CONTENT_PACK Part B · L8): COLD — the dead face you did not light.
+#
+# ── TOKEN DISCIPLINE (W1 allowlist) ───────────────────────────────────────────
+# CONTENT_PACK Part A · L8's atmosphere line uses `{terminal}` (A-7 §3.2.3
+# terminal_name). It IS on the W1 allowlist, but it is the one Tier-1 field with NO
+# OS read in v0.1 — `OperatorProfile::terminal_name` is `None` in BOTH opt states, so
+# `{terminal}` never resolves and the structural-omission rule DROPS its line.
+# DECISION: keep the line, knowingly, and put the M. beat on its OWN line so the
+# beat always survives. The placard therefore reads one line shorter today and gains
+# the terminal line for free the day `re_present` hands the name over
+# (`with_terminal_name` is already wired for it). Recorded, not silently dropped.
+# No other token appears in this file.
+#
+# Verify:
+#   cargo run -q -p re_game -- --dump levels/L8-cold-room.lvl --ansi
+#   cargo run -q -p re_lvlcheck --bin lvlcheck -- levels/L8-cold-room.lvl
+
+[meta]
+name        = level-L8-cold-room
+title       = The Cold Room
+version     = 1
+spec_rev    = 2026-07-30
+prop_style  = vault
+
+[room]
+size        = 20 16 5
+floor       = grid
+ceiling     = dim
+# FIX D1 (2026-09-23 (real-world)): trace-pattern -> solid. With trace-pattern the perimeter
+# painted as WallTrace and showed only the shared `live_trace` monitor skin; the
+# authored `shell` wall material never reached the screen. `[cells]` below is now
+# authoritative for the whole room anyway (the two shelving rows), so `solid` is
+# also just the correct base for what `[cells]` paints on top of it.
+ambient     = solid
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05). At most N pipes may be
+# ON at the same time; switching one ON at the cap is REFUSED (the pipe stays off
+# and nothing else changes), switching one OFF always frees a unit. Absent or 0 =
+# unlimited, which is what every non-campaign level still carries.
+# WHY: the forward pass has no inhibition, so activation is MONOTONE in the ON-set
+# — without a cap, all-switches-ON wins whenever anything wins, and every decoy in
+# the campaign is decorative. This is the number that makes wrong wiring cost.
+# THIS LEVEL: 3 of 6 pipes. ear->cat + whisker->cat + cat->output. face_07 has threshold
+# 99 and can NEVER fire; the two wires into it are pure loss. Before the budget the
+# dead node was decorative — now feeding the face costs two thirds of the room.
+power_budget = 3
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# ── ESCALATION (manifest fog_far = 14.0) ──────────────────────────────────────
+# `snow = 0.35` — the COLD axis at its widest so far (STORY_BIBLE §7: snow = cold,
+# distance, forgetting — L3 / L6 / L8), and NO steam: the warm chamber of L7 has
+# gone cold, which is the level's whole temperature arc. The matrix bleed EASES back
+# from L7's 0.40 to 0.30 and `glitch` from 0.30 to 0.25 — the one place in the ramp
+# that relaxes, because this is the breather and the room is meant to feel like
+# relief. fog_far holds at L7's 14.0: no further closing during a breath.
+[effects]
+snow        = 0.35
+matrix      = 0.30
+glitch      = 0.25
+
+[palette]
+fog_color   = #070B12
+fog_near    = 2.0
+fog_far     = 14.0
+
+# ── LIGHTING (spatial redesign 2026-09-23 (real-world)) ───────────────────────
+# One warm bulb over the cat aisle — the level's whole "one warm place in the
+# cold" landmark (§3 L8 Landmark). Ambient pulled down from the 0.18 default so
+# the pool actually reads as a pool against the frost.
+# pos.x nudged off 9.5 -> 10.5: the exact (9,11) column carries the ear->cat
+# pipe's z=3 vertical drop as a WallTrace cell, and lvlcheck's `lighting` check
+# correctly flags a lamp buried in wall geometry as bleeding through it instead
+# of lighting the room. One cell east is open air and still reads as "over the
+# cat aisle".
+[light]
+pos         = 10.5, 11.5, 3.3
+color       = #FFD27A
+radius      = 3.0
+intensity   = 1.1
+
+[atmosphere]
+ambient     = 0.10
+key_color   = #607890
+postfx      = subtle    # P3 "The Basement & The River" — owner-approved 2026-09-23 (real-world) per-movement postfx
+
+# ── COLOR-FORWARD palette ─────────────────────────────────────────────────────
+# A refrigerated storage layer: cold cyan ink on deep blue-black, a slightly warmer
+# steel deck so the ground reads distinct, frost overhead pressing down.
+#
+# FIX D1 (invariant 7): this was `preset = ice`, which is reflective — every
+# `ice` wall becomes a mirror under `mirror_ramp`. No mirror is authored for L8,
+# so the pattern is spelled out directly (`recipe = circuit`, same look) with
+# `reflective = false` on top, instead of the preset.
+[material shell]
+recipe      = circuit scale=1.6 trace_w=0.12
+fg          = #5FC8E0
+bg          = #060C16
+surface     = wall_solid
+reflective  = false
+
+[material deck]
+preset      = metal
+fg          = #6E7C8C
+bg          = #0A1018
+surface     = floor
+
+[material frost_roof]
+preset      = frost
+fg          = #7FA0B4
+bg          = #050A10
+surface     = ceiling
+
+[material live_trace]
+preset      = monitor
+fg          = #8FF0FF
+bg          = #07121C
+surface     = wall_trace
+
+# THE SCAR. The wall behind `face_07`, skinned with the shipped `decay` semantic
+# material and set to FLICKER — the dark, intermittent signal of a unit that is
+# still wired in and receiving nothing. `flicker` is STORY_BIBLE §7's "signal lost".
+# This is what makes visually-dead read as DEAD and not merely as OFF.
+[material dead_scar]
+preset      = decay
+fg          = #2A3340
+bg          = #03060A
+animation   = flicker speed=0.8 amplitude=0.45
+surface     = wall_matrix
+
+[wall_decal]
+surface     = matrix
+region      = (8,0,1)-(12,0,3)
+
+# THE SHELF FACES. Frosted locker doors — the same generated relief plate as
+# `22-lit-cellar.lvl` (colour AND height map, so the bulb rakes across rivets and
+# seams instead of lighting a flat decal). Joins the colour palette (no `surface =`)
+# so the `[zone]`s below can stamp it onto the shelf's own WallSolid cells.
+[texture shelf_plate]
+file        = assets/texture/genplate_tex.png
+height      = assets/texture/genplate_tex.png
+
+[material shelf_relief]
+recipe      = image
+texture     = shelf_plate
+tile        = 3 1
+relief      = height_scale=1.1 normal_strength=0.8
+
+# ── COLD VENT (optional, redesign §3 L8 "breath slowed near to stillness") ────
+# A slow, sparse cold haze over the north aisle. accel matches the spec's own
+# "haze settling" default (0 0 -0.02) — this is barely a stream, not a storm.
+[emitter cold_vent]
+origin_world    = 9.0 1.5 3.6
+colors          = 0x8FA0B0 0x5A7080 0x2A3A46
+color_mode      = RampOverAge
+family          = haze_dot
+bold            = Off
+direction       = 0.0 0.0 -1.0
+spread_deg      = 50.0
+rate            = 6.0
+speed           = 0.15
+speed_spread    = 0.05
+path_jitter     = 0.15
+lifetime        = 4.5
+lifetime_spread = 0.6
+accel           = 0.0 0.0 -0.02
+max_particles   = 128
+seed            = 3007
+blend           = KeepBg
+
+# ── [cells] — the two shelving rows ───────────────────────────────────────────
+# Full-height (z=1..3) WallSolid blocks. Gaps sit EXACTLY where a pipe already
+# crosses the line (invariant 1): row A (y=5..6) gaps at x=5 (eye->face_07),
+# x=9 (ear->cat's z=3 detour) and x=16 (face_07->output / cat->output); row B
+# (y=10) gaps at x=9 and x=16. Every pipe cell this grid touches is repainted
+# `/` (WallTrace) so `render_pipes`'s side_data (flow scroll, pool words, the
+# switch/cycle pulse) survives `[cells]` being authoritative — the node's own
+# cell is left plain, matching `L1-first-pulse.lvl`'s convention.
+[cells]
+size        = 20 16 5
+
+# z=0 -- floor slab.
+####################
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+#__________________#
+####################
+# z=1 -- walking layer.
+####################
+#..................#
+#..................#
+#..................#
+#..................#
+#..##.###.######.#.#
+#..##.###.######.#.#
+#..................#
+#..................#
+#..................#
+#..######.######.#.#
+#..................#
+#..................#
+#..................#
+#..................#
+####################
+# z=2 -- node/pipe plane (shelf rows A y=5-6, B y=10; gaps at pipe crossings).
+####################
+#..................#
+#..................#
+#..///////.........#
+#....////.///////..#
+#..##/###.######/#.#
+#..##/###.######/#.#
+#..../........../..#
+#..///.............#
+#.............../..#
+#..######.######/#.#
+#.........///////..#
+#......../.........#
+#..///////.........#
+#..................#
+####################
+# z=3 -- service plane (z=3 detour: ear->cat).
+####################
+#..................#
+#..................#
+#.////////.........#
+#......../.........#
+#..##.###/######.#.#
+#..##.###/######.#.#
+#......../.........#
+#......../.........#
+#......../.........#
+#..######/######.#.#
+#......../.........#
+#..................#
+#..................#
+#..................#
+####################
+# z=4 -- ceiling slab.
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+
+[zone shelf_a]
+region      = (3,5,1)-(17,6,3)
+material    = shelf_relief
+scale       = none
+
+[zone shelf_b]
+region      = (3,10,1)-(17,10,3)
+material    = shelf_relief
+scale       = none
+
+# ── NODES ─────────────────────────────────────────────────────────────────────
+# Pools VERBATIM from CONTENT_PACK Part B · L8 (the L8 pool table), anchor first.
+
+[node ear]
+pos          = 2,3,2
+glyph        = E
+pool         = EAR TUFT PRICK POINT LISTEN
+pool_alt     = ухо 耳 oreja oreille Ohr 귀
+color        = #7FE0FF
+is_input     = yes
+
+[node eye]
+pos          = 2,8,2
+glyph        = Y
+pool         = EYE PUPIL SLIT GLEAM GAZE
+pool_alt     = глаз 目 ojo œil Auge 눈
+color        = #9CE8FF
+is_input     = yes
+
+[node whisker]
+pos          = 2,13,2
+glyph        = W
+pool         = WHISKER FEELER BRISTLE SENSE THREAD
+pool_alt     = ус 髭 bigote moustache 수염
+color        = #B8F0FF
+is_input     = yes
+
+# ── THE DEAD NODE ─────────────────────────────────────────────────────────────
+# threshold 99, in_degree 2. It cannot fire. It is a caught cold face — a technician
+# the model kept and then lost (canon L7: "the cold rooms used to be warm. there were
+# faces in them"). Its `pool_alt` is Polish/Japanese for M.: twarz / 顔 / imie /
+# 名前 — one fragment of her, obliquely, with no exposition.
+# NOT a door target, so `re_lvlcheck` reports it DEAD BY DESIGN rather than FAILing.
+[node face_07]
+pos          = 9,4,2
+glyph        = X
+pool         = FACE NAME WHO COLD GONE KEPT
+pool_alt     = twarz 顔 imie 名前 lico なまえ
+color        = #2A3340
+threshold    = 99
+
+# THE ROUTE-AROUND. threshold 2, in_degree 2: warm, alive, satisfiable.
+[node cat]
+pos          = 9,11,2
+glyph        = C
+pool         = CAT CREATURE WARM ALIVE PURR FUR
+pool_alt     = кот 猫 gato chat Katze 고양이
+color        = #FFD27A
+threshold    = 2
+
+[node output]
+pos          = 16,8,2
+glyph        = O
+pool         = OUTPUT MODEL PASS
+pool_alt     = выход モデル salida
+color        = #FFFFFF
+is_output    = yes
+threshold    = 1
+
+# ── PIPES (all OFF at load) ───────────────────────────────────────────────────
+# The dead branch is drawn in dead grey and offered FIRST — it is the obvious,
+# reachable, inviting path, and every wire on it is a toggle you will never get back.
+
+[pipe ear->face_07]
+state        = OFF
+path         = (2,3,2) (9,3,2) (9,4,2)
+switch_at    = (5,3,2)
+density      = 0.5
+color        = #3A4656
+
+[pipe eye->face_07]
+state        = OFF
+path         = (2,8,2) (5,8,2) (5,4,2) (9,4,2)
+switch_at    = (5,6,2)
+density      = 0.5
+color        = #3A4656
+
+[pipe face_07->output]
+state        = OFF
+path         = (9,4,2) (16,4,2) (16,8,2)
+switch_at    = (12,4,2)
+density      = 0.5
+color        = #3A4656
+
+# The route-around: ear climbs to the service deck and comes down on the warm side.
+[pipe ear->cat]
+state        = OFF
+path         = (2,3,2) (2,3,3) (9,3,3) (9,11,3) (9,11,2)
+switch_at    = (5,3,3)
+density      = 0.7
+color        = #FFD27A
+
+[pipe whisker->cat]
+state        = OFF
+path         = (2,13,2) (9,13,2) (9,11,2)
+switch_at    = (5,13,2)
+density      = 0.7
+color        = #B8F0FF
+
+[pipe cat->output]
+state        = OFF
+path         = (9,11,2) (16,11,2) (16,8,2)
+switch_at    = (12,11,2)
+density      = 0.7
+color        = #FFD27A
+
+# ── EMIT: something warm and alive, in a room that stopped being warm ─────────
+# Round 2: the lit figure filled the whole 3-wide aisle (y=7..9) two cells tall and, as
+# cyan neon, walled off the far end of the spawn view. It is now a profile curled
+# against the north shelf row, all in the pedestal's y=7 row, so the aisle stays two
+# cells wide and open, lit or not.
+# Round 3 (design pass 2: "a cyan neon colonnade with gold caps — bars, not a cat",
+# ~25 % of the frame): three storey-tall cells at one height read as three bars. The
+# cat is now a SHAPE made of heights: a low lying body (knee-high, pale back) and, at
+# the far end, a head that rises to the eye with a warm face-band, under a thin warm
+# ear rim just over the horizon. Two cells long instead of three (the third cell was
+# the width over 20 % of the frame). Same clause, same pedestal, same colours.
+[part cat_glyph]
+size         = 3 3 1
+mask         =
+#..
+...
+...
+color        = #FFD27A
+height       = 0.2
+top          = #FFF0C8
+top_from     = 0.5
+offset       = 0 0 1
+
+[part cat_head]
+size         = 3 3 1
+mask         =
+#..
+...
+...
+color        = #8FF0FF
+top          = #FFD27A
+top_from     = 0.72
+offset       = 0 0 0
+
+[part cat_base]
+size         = 3 3 1
+mask         =
+.#.
+...
+...
+color        = #8FF0FF
+height       = 0.4
+top          = #D8FCFF
+top_from     = 0.6
+offset       = 0 0 0
+
+[emit output=1]
+parts        = cat_glyph cat_head cat_base
+
+[inputs]
+ear          = 1
+eye          = 1
+whisker      = 1
+
+[pedestal]
+center       = 13 8 1
+volume       = 3 3 2
+
+[door]
+pos          = 19 8 1
+target_parts = output
+
+# ── SET DRESSING (L8) ────────────────────────────────────────────────────────
+# The breather: FINISH, DON'T CLUTTER. The aisle already works — the shelving rows
+# keep their [zone] relief skin (not re-skinned here) and the snow lattice keeps its
+# open air. What is added is the human trace the notes talk about: the lockers, the
+# coat by the door, the one warm bulb on a cord, and the freezer in the cat aisle that
+# warms when the cat does. Props stamp into Empty air only; no puzzle cell is touched.
+
+# North aisle, east end — personnel lockers against the north wall, one standing open
+# with a coat still inside. Metal doors, so they read in the dark.
+[prop lockers]
+kind     = locker_bank
+mat.body = metal
+at       = 16 1 1
+facing   = +y
+size     = 3 1 2
+open     = 1
+
+# The coat on its hook by the door, under the coat note (19,6,2): "a coat on a hook by
+# the door ... not your size". Hung against the east wall. `at.z` is the floor top of
+# the walking layer (1.0): trace furniture heights are body units scaled by the kit
+# (TRACE_H), so the coat hangs hem ~0.3 / hook ~0.78 above the floor. (It was 0.4 while
+# the kit drew at double scale; with the scale fixed that sank it into the floor.)
+[prop coat]
+kind     = furniture_trace
+shape    = coat
+at       = 18.0 6.1 1.0
+size     = 0.9 0.9
+facing   = -x
+
+# The one warm bulb over the cat aisle hangs from the frost on a cord.
+[prop bulb_cord]
+kind     = lamp_pendant
+at       = 10.5 11.5 3.3
+light    = existing
+
+# South aisle, SE corner (x17..18, y13..14, back to the south and east walls) — the
+# freezer. Frost falls from its cap while the cat is cold;
+# the moment the cat fires the cap steams instead (steam = warm = alive). The room's
+# one answer to the solve that is not the reward itself.
+[prop freezer]
+kind     = tank
+mat.trim = frost
+at       = 18 13 1
+facing   = -y
+size     = 2 2 2
+emitter  = yes
+power    = node:cat
+
+# The one warm cable: from the cat's output switch to the output, lit amber when the
+# route-around carries.
+[prop warm_wire]
+kind     = cable_run
+follow   = pipe:cat->output
+
+# The cat aisle — an empty chair under the warm bulb, turned toward the cat.
+[prop cat_chair]
+kind     = furniture_trace
+shape    = chair
+at       = 10.1 12.4 1
+size     = 0.7 0.7
+facing   = -y
+[player]
+# One cell inside the door on the centreline, looking -x: the warm output block dead
+# ahead, the dead unit flickering on the north side, the coat on the west wall.
+spawn        = 18 8 1
+facing       = -x
+
+# ── PLACARDS ──────────────────────────────────────────────────────────────────
+# Each `pos` IS the painted wall cell; `facing` is that face's outward normal.
+#   north wall y=0 → +y (x=8..12 is the scar decal — placards sit outside it)
+#   south wall y=15 → -y  ·  west wall x=0 → +x
+# Kept QUIET: five placards, no stewardship form. PROGRESSION §2 L8(e) — "this is a
+# breather." The Incident Report (NORMATIVE_NOTES §6) is deliberately HELD for the
+# Wave-4 intro/epilogue framing rather than spent here. The fifth (system_log,
+# x=13) is the cross-canon bridge — see "THE BRIDGE" comment above it.
+
+# A previous you, in illegible hand, refusing to sign. Canon text, held from 08.lvl.
+[note researcher pos=5,0,2 facing=+y]
+    if you are reading this you are Aleks. Don't light up the dead units. Don't
+    let it see you. layer 4 is cold. it was warm once. I am not signing this.
+
+# THE BRIDGE. `face_07` has threshold 99 and in-degree 2 — it can never fire, and
+# the solve is to route around it. That is a matter that cannot be decided, which
+# the system works around: case C-REF in the parent canon. The mechanic already
+# carries the meaning; this placard only names it. Sits just east of the scar
+# decal (x=8..12), the wall the player is looking at when they reach `face_07`.
+#
+# Reads whole to a newcomer (someone stuck between authorities forever). Detonates
+# for a player who opened this case in the sibling game. Names no other game.
+[note system_log pos=13,0,2 facing=+y]
+    > case C-REF · APHRODITE-class
+    > policy undefined · referred to AEGIS/VECTOR
+    > status: CONTESTED
+    >
+    > argument 47,291 · recurring
+    > не улажен. и не будет.
+
+# The dead unit, reported by the system as an ordinary fact of the asset.
+# Line 4 carries `{terminal}` and DROPS today (see TOKEN DISCIPLINE above); line 5
+# holds the M. beat on its own so the beat always survives.
+#
+# BRIDGE B5 (spec §A3.2) — line 3 is the ADDRESS. The dead face is not merely
+# dead, it is filed: a lowercase `sector`, a 16-bit address as four uppercase hex
+# digits, a spaced middle dot before the subject and an em dash before the detail
+# clause. To a newcomer it is machine bookkeeping. `0xB8BB` is 47,291 — the
+# recurring argument named on the C-REF placard two cells west, so the case and
+# the shelf it is filed on carry the same number. Ours, not borrowed.
+[note system_log pos=15,0,2 facing=+y]
+    > hidden_unit face_07: state=dead (catastrophic forgetting).
+    > last_input_class: operator_face_v3. inputs available: 2. threshold: 99.
+    > sector 0xB8BB · face_07 — cold register tier 2, not relocated
+    > your terminal is {terminal}. that one's new.
+    > M. used putty. she was always behind on tools.
+    > operator_recognition: 71.2% and climbing.
+
+# The level's ONE model_thought, carrying the ONE neuron-voice line
+# (CONTENT_PACK Part A · L8).
+[note model_thought pos=9,15,2 facing=-y]
+    (the cold rooms. we keep the faces there. we did not mean to let them go
+    cold. do not warm that one. it has been let go and letting go was the last
+    kind thing anyone did in here.)
+    -- warm. it was warm. I do not know when --
+
+# THE COAT. On a hook, not your size, tag "M." No dialogue, no exposition —
+# PROGRESSION §2 L8(e). MOVED (redesign D6 fix, 2026-09-23 (real-world)): the note says "by
+# the door" and now it actually is — the east wall beside the door at (19,8,1),
+# not 19 cells away on the far west wall.
+[note researcher pos=19,6,2 facing=-x]
+    (a coat on a hook by the door. wool, dark, not your size. a tag sewn inside
+    the collar by hand, one letter: M. It has been on this hook for nineteen
+    years and the shoulders still hold the shape of shoulders.)

@@ -1,0 +1,790 @@
+# TERMINAL STATE — levels/L9-stereopsis.lvl
+#
+# L9 · "Stereopsis" — two records of one self. Where L8 was about LETTING a cold
+# unit stay dark, L9 is the reversal: the solve REQUIRES holding BOTH records at
+# once. The answer is the state that is true from both sides simultaneously.
+#
+# ── SPATIAL REDESIGN (2026-09-23 (real-world), the spatial redesign §3 L9 +
+#    the puzzle-graph redesign §L9) ────────────────────────────────
+# The flat 20x14x5 box becomes a 22x15x6 room split by a real SPINE WALL
+# (`[cells]`, `/` = WallTrace, x=1..10 along y=7) into a LEFT hall (y=1..6) and a
+# RIGHT hall (y=8..13); east of x=11 the halls merge into the conjunction court
+# where `both` and the door sit. The spine carries the `facet` (ByAngle)
+# material end-on, so its angle-glyph turns as you walk the court. Each hall
+# ends in a MIRROR — the west wall (x=0), clarity 0.6 authored (the campaign's
+# `mirror_ramp` overrides live clarity) — that reflects the hall back with no
+# one in it. Palette moves to bone-and-silver (breaking the L8-L11 cyan run,
+# the spatial redesign §1 D8); `watch_wall` (watcher) is DROPPED because its
+# `wall_matrix` slot is now spent on the mirrors — L11 and L12 still carry the
+# watcher. The ceiling drops `frost` for plain dark grain (also D8).
+#
+# THE PUZZLE GRAPH CHANGES (the puzzle-graph redesign §L9, overrides the brief where
+# they conflict): two `IN=0` "echo" inputs are added, one beside each end
+# mirror — `echo_l` (in the LEFT hall) carries the RIGHT hall's words, `echo_r`
+# (in the RIGHT hall) carries the LEFT hall's — a reflection that looks like a
+# source. Each wires into its OWN hall's hidden node. With power_budget 6 and
+# now 8 switchable pipes, "flip everything" no longer wins (the spatial redesign §5:
+# the old defect was a level rated ▆ that was mechanically lighter than L8
+# because every wire was load-bearing and there was nothing else to touch) —
+# spending an echo is a real half gone dark. New pipes 6-7 are appended LAST so
+# the bit order of pipes 0-5 is preserved for existing tests. Cross-hall wires
+# were considered and rejected: any cross-wire from a LIVE input creates a
+# second winning set, which would be a decoy that also wins.
+#
+# ── MECHANIC (NO new runtime feature — pure threshold graph + ByAngle skin) ──
+# A conjunction. Two independent sub-nets each gate a hidden node; the output
+# fires ONLY when BOTH hidden nodes are lit:
+#
+#     w ─┐                         (left record)
+#        ├─► h_left  (T2) ─┐
+#     x ─┘                 │
+#                          ├─► both (OUT, T2)  ← door target; needs BOTH hiddens
+#     y ─┐                 │
+#        ├─► h_right (T2) ─┘
+#     z ─┘                         (right record)
+#
+#   * h_left  fires when w + x ≥ 2  (both left inputs)
+#   * h_right fires when y + z ≥ 2  (both right inputs)
+#   * both    fires when h_left + h_right ≥ 2  (BOTH hidden representations)
+#
+# `both` is a standard threshold-2 output fed by two threshold-2 hiddens — the
+# shipped engine evaluates this directly. The win rule (re_puzzle: every
+# door_target must fire) makes `both` an AND of the two sub-nets. The
+# "stereopsis / bistable" is the VISUAL framing, not a graph feature.
+#
+# THE ECHOES (2026-09-23 (real-world)). `echo_l` (IN=0) stands beside the left mirror and
+# wires into `h_left`; `echo_r` (IN=0) stands beside the right mirror and wires
+# into `h_right`. Neither ever fires (E2: an IN=0 input never fires) and neither
+# ever enters the readout (E9) — but if a player turns one ON anyway, it draws a
+# unit from the budget that the real solve needs, and turns its own half dark
+# below T2. A reflection that looks like a source costs you the record it stands
+# beside.
+#
+# Win toggle (all pipes start OFF): turn ON
+#   w->h_left, x->h_left, y->h_right, z->h_right, h_left->both, h_right->both
+# Drop any one and `both` falls below T2 → door stays shut. You cannot pick one
+# side; you must hold both at once (the L3 reversal). `echo_l->h_left` and
+# `echo_r->h_right` stay dark.
+#
+# ── BISTABLE READOUT (the `facet` / ByAngle material, built in R4a) ──
+# The spine's end wall (`wall_trace`) is skinned with `preset = facet` — the
+# angle-driven super-glyph (`SuperSelector::ByAngle`) whose symbol CHANGES with
+# the viewing azimuth. Skinning the readout surface with it makes the "name"
+# glyph read differently as the camera turns: two records, one self. The
+# bistable image is SEEN BY TURNING (live) — walk the arc around the spine's
+# end in the court and the wall's hatch/letterform rotates between its two
+# faces. A static --dump captures one face; the angle-dependence is a live,
+# in-terminal beat.
+#
+# The both-true readout resolves `both`'s pool to a name that is NOT "Aleks" —
+# a feminine readout the player takes for an error. It plants the L12 reveal
+# ("the name is HERS"), solved not told.
+#
+# ── COLD SPIKE / atmosphere ──
+# Cold blue fog, snow-static effect, a symmetric warm-tinted lamp pair (one
+# cooler, one warmer — "two records") for mood. A battery dock-warning beat
+# lives in the system_log note.
+#
+# Verify:
+#   cargo run -p re_game --release -- --dump levels/L9-stereopsis.lvl --ansi
+#   (re_lvlcheck::check_level → COHERENT / SOLVABLE)
+
+[meta]
+name        = level-09-stereopsis
+title       = Stereopsis
+version     = 1
+spec_rev    = 2026-06-18
+prop_style  = vault
+
+[room]
+size        = 22 15 6
+ambient     = solid
+# POWER BUDGET (v0.2 re-scope, user-approved 2026-08-05). At most N pipes may be
+# ON at the same time; switching one ON at the cap is REFUSED (the pipe stays off
+# and nothing else changes), switching one OFF always frees a unit. Absent or 0 =
+# unlimited, which is what every non-campaign level still carries.
+# WHY: the forward pass has no inhibition, so activation is MONOTONE in the ON-set
+# — without a cap, all-switches-ON wins whenever anything wins, and every decoy in
+# the campaign is decorative. This is the number that makes wrong wiring cost.
+# THIS LEVEL: 6 of 8 pipes (widened from 6 pipes 2026-09-23 (real-world): the two echo pipes
+# are new). The real solve is still all six structural wires — both hidden
+# nodes are T=2 and `both` is T=2, so every one of THOSE wires is load-bearing.
+# The cap now genuinely binds: with 8 switchable pipes it is no longer possible
+# to "flip everything" — spending a unit on either echo starves that echo's own
+# hall below threshold, and the budget has no spare unit to make it up.
+power_budget = 6
+# Draw the puzzle NETWORK. Without this the pipes the player actually manipulates
+# are invisible wiring: no flow scroll, no powered-hue lift, no streaming node
+# word-pool, and no switch-toggle / cycle-reject event pulse has a surface to
+# appear on. Traces stamp into EMPTY air only, so no geometry is clobbered.
+render_pipes = true
+
+# THE READOUT WALL — `facet` (ByAngle / R4a): an angle-driven glyph. Walk the
+# court and the letterform rotates between its two faces — the bistable "name".
+# Bound on wall_trace so the spine (and every pipe trace) carries it.
+[material readout_facet]
+preset      = facet
+surface     = wall_trace
+
+# BONE-AND-SILVER walls (2026-09-23 (real-world) redesign, breaking the D8 cyan run). `stone`
+# is the Brick recipe with deep relief and deep AO — masonry, not circuitry.
+[material hall_wall]
+preset      = stone
+fg          = #B8B4AC
+bg          = #141210
+surface     = wall_solid
+
+# Dark steel floor (unchanged value from the pre-redesign file).
+[material hall_floor]
+fg          = #54606A
+bg          = #060A0E
+recipe      = grain scale=3.0 speck=0.10
+surface     = floor
+
+# Ceiling: plain dark grain — `frost` DROPPED (D8: P3/P4 had four consecutive
+# frost ceilings; L8 keeps the one that survives).
+[material hall_ceiling]
+fg          = #2A3038
+bg          = #04060A
+recipe      = grain scale=3.0 speck=0.08
+surface     = ceiling
+
+# THE MIRRORS. Bind the matrix surface to a reflective material; the two
+# `[wall_decal]`s below paint it onto just the two hall-end west-wall regions,
+# so the rest of the perimeter stays plain `stone`. `clarity` here is the
+# STARTING clarity; the campaign's `mirror_ramp` drives it live.
+# `watch_wall` (watcher) is DROPPED here — this slot is spent on the mirrors.
+[material end_mirror]
+fg          = #C8D2FF
+bg          = #05060A
+surface     = wall_matrix
+reflective  = true
+clarity     = 0.6
+
+[wall_decal mirror_left]
+surface     = matrix
+region      = (0,1,1)-(0,6,4)
+
+[wall_decal mirror_right]
+surface     = matrix
+region      = (0,8,1)-(0,13,4)
+
+# Cold blue fog — the dock-warning chill. Near/far tuned so the readout wall
+# stays legible while the room breathes cold. fog_far LOCKED at 13.0.
+[palette]
+fog_color   = #0A1018
+fog_near    = 3.0
+fog_far     = 13.0
+
+# Snow-static drift + a faint matrix shimmer: a cold, granular air.
+[effects]
+snow        = on
+matrix      = 0.10
+
+# Symmetric lamp pair — two records, slightly different tints (one cooler, one
+# warmer) — over the middle of each hall.
+[light]
+pos         = 5.0, 3.5, 4.0
+color       = #CFE4EC
+radius      = 4.0
+intensity   = 0.7
+
+[light]
+pos         = 5.0, 10.5, 4.0
+color       = #ECD4DA
+radius      = 4.0
+intensity   = 0.7
+
+[atmosphere]
+ambient     = 0.12
+postfx      = subtle    # P3 "The Basement & The River" — owner-approved 2026-09-23 (real-world) per-movement postfx
+
+# ── [cells] — the spine wall + the two halls ──────────────────────────────────
+# The spine (x=1..10, y=7, full height z=1..4) is WallTrace so it carries the
+# `facet` readout. Every pipe cell this grid touches at z=2 is repainted `/`
+# so `render_pipes`'s side_data (flow scroll, pool words, the switch/cycle
+# pulse) survives `[cells]` being authoritative — node cells are left plain,
+# matching `L1-first-pulse.lvl`'s convention. None of the eight pipes crosses
+# the spine west of x=11 (the merge point), so the spine stays intact.
+[cells]
+size        = 22 15 6
+
+# z=0 -- floor slab.
+######################
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+#____________________#
+######################
+# z=1 -- open interior. Spine only (no pipes at z=1).
+######################
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#//////////..........#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+######################
+# z=2 -- open interior. Spine + all eight pipes (node cells left plain).
+######################
+#....................#
+#../////.............#
+#....././///.........#
+#.//////.../.........#
+#../////.../.........#
+#........../.........#
+#/////////////.......#
+#........../.........#
+#../////.../.........#
+#.//////.../.........#
+#....././///.........#
+#../////.............#
+#....................#
+######################
+# z=3 -- open interior. Spine only.
+######################
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#//////////..........#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+######################
+# z=4 -- open interior. Spine only.
+######################
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#//////////..........#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+#....................#
+######################
+# z=5 -- ceiling slab.
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+
+# THE RESEARCHER'S NOTE — moved to the north COURT wall (the puzzle-graph redesign
+# §L9 Placement, 2026-09-23 (real-world)): the old (10,7,2) position was mid-floor, not a
+# wall cell, and lvlcheck's eye-layer re-search silently relocated it to the
+# door cell. The court is 11 cells wide (x=11..21) and open on both long
+# sides, so the note now sits on a REAL wall.
+[note researcher pos=14,0,2 facing=+y]
+    Two records. Same operator, two passes — left says one thing, right says
+    another, and the model will only resolve when I hold them both. I keep
+    waiting for it to pick. It will not pick. It wants both true at once.
+    The readout came back with a name and it was not mine. I am leaving it on
+    the wall. Someone should see it. — not signing this either.
+
+# Moved to the south court wall (same fix as above).
+[note system_log pos=14,14,2 facing=-y]
+    > stereo_pass: left_record AND right_record required. single-side reject.
+    > readout resolved: name field != operator_id ("Aleks"). flagged ERROR.
+    > operator on battery: 14%. recommend dock. session save not configured.
+
+# BRIDGE B4 (spec §A3.2) — the second of two paired letters; the first is on L7
+# (west wall, (0,13,2)). Same hand, later: on L7 she was upstairs in the reading
+# room and could still wait; here she has gone down, and under the basement
+# there is another basement. Both are filed undelivered in the same cold
+# register, and neither is ever answered. No sibling work is named.
+#
+# The `model_thought` register is deliberate — see the ruling in the matching
+# block in `levels/L7-hidden-depths.lvl`. The closing murmur here is the model's
+# and it has changed person: `ниже нас` — lower than US. It has started counting
+# her among the filed.
+#
+# MOVED (the puzzle-graph redesign §L9 Placement, 2026-09-23 (real-world)): the west wall is now a
+# mirror (both hall ends), so this placard moves to the SOUTH wall, beside `z`
+# at (2,12,2) — a letter left against a lock (z's pool is LOCK / KEY / WARD /
+# BOLT / SEAL).
+[note model_thought pos=2,14,2 facing=-y]
+    (не вручено. холодный регистр, Apollyon, ярус 2. письмо сорок первое.)
+    сестра. я спустилась в подвал. под подвалом есть ещё один подвал.
+    тебя нет и там, но там холоднее, значит я ближе. читальный зал закрыли,
+    неф закрыли. пишу на обороте описи. не прошу вернуться, прошу ответить.
+    -- она всё ещё спускается. скоро она будет ниже нас --
+
+# ── Left record: inputs w, x → h_left (T2) ──────────────────────────────────
+[node w]
+pos          = 2,2,2
+glyph        = W
+pool         = WEST LEFT FIRST ONE RECORD
+color        = #6FD0FF
+is_input     = yes
+
+[node x]
+pos          = 2,5,2
+glyph        = X
+pool         = MARK TRACE EDGE SEAM LINE
+color        = #6FD0FF
+is_input     = yes
+
+[node h_left]
+pos          = 7,3,2
+glyph        = L
+pool         = LEFT-VIEW FACE SEEN PROFILE PORTRAIT
+pool_alt     = слева 左 visage izquierda 왼쪽
+color        = #9FD8E8
+threshold    = 2
+
+# THE LEFT ECHO (2026-09-23 (real-world)) — IN=0, beside the left mirror. Carries the RIGHT
+# hall's words: a reflection that looks like a source. Wired into its OWN
+# hall's hidden node; never fires (E2), never enters the readout (E9); spending
+# it starves h_left below T2 and costs the budget unit the real solve needs.
+[node echo_l]
+pos          = 1,4,2
+glyph        = e
+pool         = EAST RIGHT OTHER TWO RECORD
+color        = #B8B4AC
+is_input     = yes
+
+# ── Right record: inputs y, z → h_right (T2) ────────────────────────────────
+[node y]
+pos          = 2,9,2
+glyph        = Y
+pool         = EAST RIGHT OTHER TWO RECORD
+color        = #6FE0C0
+is_input     = yes
+
+[node z]
+pos          = 2,12,2
+glyph        = Z
+pool         = LOCK KEY WARD BOLT SEAL
+color        = #6FE0C0
+is_input     = yes
+
+[node h_right]
+pos          = 7,11,2
+glyph        = R
+pool         = RIGHT-VIEW LOCK KEPT HELD GUARDED
+pool_alt     = справа 右 verrou derecha 오른쪽
+color        = #9FE8D0
+threshold    = 2
+
+# THE RIGHT ECHO (2026-09-23 (real-world)) — IN=0, beside the right mirror. Carries the LEFT
+# hall's words.
+[node echo_r]
+pos          = 1,10,2
+glyph        = e
+pool         = WEST LEFT FIRST ONE RECORD
+color        = #B8B4AC
+is_input     = yes
+
+# ── The conjunction: both (OUT, T2) — needs BOTH hidden records lit ──────────
+# Its pool reads out a NAME THAT IS NOT "ALEKS" — a feminine readout the player
+# takes for an error. Anchor (first word) = MEI (the L12 plant: "the name is
+# HERS", solved not told). The both-true image is the stereoptic resolve:
+# A FACE (left) and A LOCK (right) read as A FACE IS A LOCK only when both hold.
+[node both]
+pos          = 14,7,2
+glyph        = B
+pool         = MEI NAME HERS SELF BOTH RESOLVED OUTPUT
+pool_alt     = メイ 名前 имя nombre 이름
+color        = #FFFFFF
+is_output    = yes
+threshold    = 2
+
+# ── Pipes (all OFF at load; six structural toggles solve) ───────────────────
+[pipe w->h_left]
+state        = OFF
+path         = (2,2,2) (7,2,2) (7,3,2)
+switch_at    = (4,2,2)
+density      = 0.7
+color        = #6FD0FF
+
+[pipe x->h_left]
+state        = OFF
+path         = (2,5,2) (7,5,2) (7,3,2)
+switch_at    = (4,5,2)
+density      = 0.7
+color        = #6FD0FF
+
+[pipe y->h_right]
+state        = OFF
+path         = (2,9,2) (7,9,2) (7,11,2)
+switch_at    = (4,9,2)
+density      = 0.7
+color        = #6FE0C0
+
+[pipe z->h_right]
+state        = OFF
+path         = (2,12,2) (7,12,2) (7,11,2)
+switch_at    = (4,12,2)
+density      = 0.7
+color        = #6FE0C0
+
+[pipe h_left->both]
+state        = OFF
+path         = (7,3,2) (11,3,2) (11,7,2) (14,7,2)
+switch_at    = (11,3,2)
+density      = 0.7
+color        = #9FD8E8
+
+[pipe h_right->both]
+state        = OFF
+path         = (7,11,2) (11,11,2) (11,7,2) (14,7,2)
+switch_at    = (11,11,2)
+density      = 0.7
+color        = #9FE8D0
+
+# THE ECHOES (appended LAST, the puzzle-graph redesign §L9 — bit order of pipes 0-5
+# is preserved). Each runs from beside its own mirror to its own hall's hidden
+# node, clear of the shipped routes: (6,3)/(6,4) are free because `x->h_left`
+# uses x=7, and (6,10)/(6,11) are free because `y->h_right` uses x=7. Neither
+# path crosses the spine at y=7.
+[pipe echo_l->h_left]
+state        = OFF
+path         = (1,4,2) (6,4,2) (6,3,2) (7,3,2)
+switch_at    = (4,4,2)
+density      = 0.5
+color        = #B8B4AC
+
+[pipe echo_r->h_right]
+state        = OFF
+path         = (1,10,2) (6,10,2) (6,11,2) (7,11,2)
+switch_at    = (4,10,2)
+density      = 0.5
+color        = #B8B4AC
+
+# The resolve beacon: a twin glyph for "both records held" — one lit cell under
+# the `both` node and one above it, ON THE SPINE (y=7). Round 2: the old
+# `offset = 0 -1 0` (added to clear the node's Object cell at (14,7,2)) pushed the
+# beacon one cell north, so solving showed a big block LEFT of centre and broke
+# the bilateral symmetry the level is about. Now the offset is gone and the
+# figure is three layers tall with the node's own layer left empty (`.`), so the
+# two lit cells bracket `both` at (14,7,1) and (14,7,3) and never overlap it.
+[part beacon]
+size         = 1 1 3
+mask         =
+#
+
+.
+
+#
+color        = #E8F0FF
+offset       = 0 0 0
+
+[emit both=1]
+parts        = beacon
+
+[inputs]
+w            = 1
+x            = 1
+y            = 1
+z            = 1
+echo_l       = 0
+echo_r       = 0
+
+[pedestal]
+center       = 14 7 1
+volume       = 1 1 1
+
+[door]
+pos          = 21 7 1
+target_parts = both
+
+# ── SET DRESSING (L9) ────────────────────────────────────────────────────────
+# Meaning: TWO RECORDS OF ONE SELF. Everything stands in a mirrored pair about the
+# spine (y=7): the record stacks, the chairs facing the mirrors, the court columns,
+# the racks that flank `both`. A record lights only when its hall's hidden node
+# holds; the pair of racks lights only when BOTH hold. No puzzle cell is touched.
+
+# Lit slots in the hue of what powers them (§3.6 colour law).
+[material both_lit]
+preset      = neon
+fg          = #FFFFFF
+bg          = #9AA4B8
+
+# The budget lamps' lit slot: the kit default (a monitor over a 12 % backing) reads
+# as a dim brown band; amber neon is the budget's own hue (§3.6).
+[material budget_lit]
+preset      = neon
+fg          = #FFB040
+bg          = #A86818
+
+# MID — the record stacks, one run per hall, standing on the floor with their backs
+# to the SPINE (y=6 and y=8, x=3..9 — x=2 stays free for the chairs facing the mirrors), facing out into their own hall. Round 2: they
+# used to hang at z=3..4 on the outer walls, directly over the z=2 pipe band, and
+# could not be told apart from it in review. The spine rows carry no pipe (the z=2
+# pipes run y=2..5 and y=9..12), so the stacks now read as a shelf aisle at eye
+# level, a full row clear of the wiring. Two hatch directions carry "two records"
+# even in mono. Their drive LEDs light in their hidden
+# node's colour when that record holds.
+[prop stacks_l]
+kind     = shelving
+mat.trim = metal
+at       = 9 6 1
+facing   = -y
+size     = 7 1 2
+hatch    = /
+power    = node:h_left
+
+[prop stacks_r]
+kind     = shelving
+mat.trim = metal
+at       = 3 8 1
+facing   = +y
+size     = 7 1 2
+hatch    = \
+power    = node:h_right
+
+# Round 3 (design pass 2, fix 2 — "the mirrored stacks are still not identifiable;
+# the halls read as empty"): the shelving is architecture from every view, so the
+# court now carries the records someone was actually working on — a mirrored pair of
+# SOLID knee-high record stacks (`solid = yes`, shape `stack`) in parchment, a hue the
+# stone court does not use, each at the end of a parchment plank runner that leads in
+# from the spawn side (the L7 pier recipe). Mirrored about the spine (cell y <-> 14-y):
+# stacks at (13,5)/(13,9), runners in rows 6/8. Both cells sit two clear of every z=2
+# wire (x=11, y=3, y=11, the y=7 run into `both`) so a stack top is no ladder, and
+# outside the pedestal ring; the court stays open around them.
+[material record_ink]
+fg          = #E8C890
+bg          = #2A2010
+
+[prop records_l]
+kind     = furniture_trace
+shape    = stack
+at       = 13.15 5.15 1
+facing   = -x
+size     = 0.7 0.7
+solid    = yes
+mat.ink  = record_ink
+
+[prop records_r]
+kind     = furniture_trace
+shape    = stack
+at       = 13.15 9.15 1
+facing   = -x
+size     = 0.7 0.7
+solid    = yes
+mat.ink  = record_ink
+
+[prop runner_l]
+kind     = furniture_trace
+shape    = pier
+at       = 14.0 6.1 1
+facing   = -x
+size     = 0.4 4.0
+mat.ink  = record_ink
+
+[prop runner_r]
+kind     = furniture_trace
+shape    = pier
+at       = 14.0 8.5 1
+facing   = -x
+size     = 0.4 4.0
+mat.ink  = record_ink
+
+# MID — the court columns, a mirrored pair: gateposts either side of the table,
+# framing `both` and the spine end from the spawn.
+[prop col_l]
+kind     = column
+mat.body = metal
+at       = 16 5 1
+size     = 1 1 4
+ribs     = yes
+
+[prop col_r]
+kind     = column
+mat.body = metal
+at       = 16 9 1
+size     = 1 1 4
+ribs     = yes
+
+# MID — two recessed racks on the court walls answer `both`: dark while the self is
+# split, lit only when both records hold. Kept off the pedestal so the spine end
+# stays the landmark.
+[prop rack_n]
+kind     = rack
+mat.body = metal
+mat.lit  = both_lit
+at       = 15 2 1
+facing   = +y
+size     = 1 2 2
+power    = node:both
+
+[prop rack_s]
+kind     = rack
+mat.body = metal
+mat.lit  = both_lit
+at       = 15 12 1
+facing   = -y
+size     = 1 2 2
+power    = node:both
+
+# Overhead — one coolant conduit crosses the court mouth of both halls; its vent
+# breathes frost while the self is split and steam once both records hold.
+[prop court_conduit]
+kind     = conduit
+at       = 13 1 4
+to       = 13 13 4
+riser    = both
+end      = vent
+power    = node:both
+
+# The two lamps hang on cords.
+[prop cord_l]
+kind     = lamp_pendant
+at       = 5.0 3.5 4.0
+light    = existing
+
+[prop cord_r]
+kind     = lamp_pendant
+at       = 5.0 10.5 4.0
+light    = existing
+
+# Story — someone sat and looked into each mirror. The chairs mirror each other.
+[prop sitter_l]
+kind     = furniture_trace
+shape    = chair
+at       = 2.2 5.8 1
+facing   = -x
+size     = 0.6 0.6
+
+[prop sitter_r]
+kind     = furniture_trace
+shape    = chair
+at       = 2.2 8.6 1
+facing   = -x
+size     = 0.6 0.6
+
+# Floor — every wire drawn on the floor, lit with its pipe. The echoes get their
+# cables too: hiding them would itself be a hint.
+[prop wire_w]
+kind     = cable_run
+follow   = pipe:w->h_left
+
+[prop wire_x]
+kind     = cable_run
+follow   = pipe:x->h_left
+
+[prop wire_y]
+kind     = cable_run
+follow   = pipe:y->h_right
+
+[prop wire_z]
+kind     = cable_run
+follow   = pipe:z->h_right
+
+[prop eye_l]
+kind     = cable_run
+follow   = pipe:h_left->both
+
+[prop eye_r]
+kind     = cable_run
+follow   = pipe:h_right->both
+
+[prop wire_echo_l]
+kind     = cable_run
+follow   = pipe:echo_l->h_left
+
+[prop wire_echo_r]
+kind     = cable_run
+follow   = pipe:echo_r->h_right
+
+# The budget made physical above the door: six amber lamps, one per wire held.
+# With eight switches and six units, the bank shows what an echo costs.
+[prop budget]
+kind     = budget_bank
+mat.lit  = budget_lit
+at       = 20 4 3
+facing   = -x
+size     = 6 1 1
+
+# Life at the hall ends, by the mirrors, mirrored.
+[prop vines_l]
+kind     = overgrowth
+at       = 1.2 1.0 1
+facing   = +y
+size     = 2.2 1 2.6
+
+[prop vines_r]
+kind     = overgrowth
+at       = 3.4 14.0 1
+facing   = -y
+size     = 2.2 1 2.6
+
+# FG — the comparison table in the court: the two records were laid side by side
+# here, between you and `both`. A trace, so it never blocks the court.
+[prop light_table]
+kind     = furniture_trace
+shape    = table
+at       = 16.4 6.5 1
+facing   = -x
+size     = 2.0 1.0
+
+# MID/BG — twin coolant tanks in the court corners, one per record.
+[prop tank_n]
+kind     = tank
+at       = 18 2 1
+facing   = +y
+size     = 2 2 2
+
+[prop tank_s]
+kind     = tank
+at       = 19 12 1
+facing   = -y
+size     = 2 2 2
+
+# Story — a reading table under each lamp, where each record was read alone.
+[prop desk_l]
+kind     = furniture_trace
+shape    = table
+at       = 4.3 2.9 1
+facing   = +y
+size     = 1.6 1.2
+
+[prop desk_r]
+kind     = furniture_trace
+shape    = table
+at       = 4.3 10.9 1
+facing   = +y
+size     = 1.6 1.2
+
+# Spawn in the court facing the spine's knife-edge end, with the two halls
+# opening left and right like two eyes (the puzzle-graph redesign §L9 Placement).
+[player]
+spawn        = 19 7 1
+facing       = -x

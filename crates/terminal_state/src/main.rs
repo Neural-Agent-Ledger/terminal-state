@@ -164,6 +164,16 @@ const KNOWN_FLAGS: [&str; 15] = [
     "--dump-schedule",
 ];
 
+/// The [`KNOWN_FLAGS`] that never take a value, so `--flag=…` is a usage error.
+const FLAGS_WITHOUT_VALUE: [&str; 6] = [
+    "-h",
+    "--help",
+    "--dump",
+    "--ansi",
+    "--dump-color",
+    "--dump-schedule",
+];
+
 /// The flag NAME of an argument: everything before the first `=`, so
 /// `--color=256` and `--color` are the same flag.
 fn flag_name(arg: &str) -> &str {
@@ -224,7 +234,11 @@ fn scan_args(args: &[String]) -> ScannedArgs<'_> {
             continue;
         }
         if a.starts_with('-') {
-            if !is_known_flag(a) {
+            // `--dump=…` on a flag that takes no value is unknown too: every
+            // check for these flags is an exact match, so it would otherwise be
+            // accepted here and then do nothing.
+            let stray_value = a.contains('=') && FLAGS_WITHOUT_VALUE.contains(&flag_name(a));
+            if !is_known_flag(a) || stray_value {
                 unknown.push(a.as_str());
             }
             // Only the SPACED form consumes the following argument; `--flag=value`
@@ -240,6 +254,21 @@ fn scan_args(args: &[String]) -> ScannedArgs<'_> {
         positionals,
         unknown,
     }
+}
+
+/// The `--size` usage error to print, if `--size` is present but unparseable.
+///
+/// `parse_size_arg` folds "absent" and "malformed" into one `None`, so on its own
+/// a typo like `--size 120X40` silently auto-sizes — the same "the flag did
+/// nothing" failure the unknown-flag check exists to prevent.
+fn size_flag_error(args: &[String]) -> Option<String> {
+    let present = args
+        .iter()
+        .skip(1)
+        .any(|a| a == "--size" || a.starts_with("--size="));
+    (present && parse_size_arg(args).is_none()).then(|| {
+        "terminal-state: invalid --size value (use <cols>x<rows>, e.g. --size 100x32)".to_string()
+    })
 }
 
 /// Did the player ask for help? Checked FIRST, before any other parsing, so
@@ -319,6 +348,10 @@ fn main() {
             eprintln!("terminal-state: unrecognised option '{bad}'");
         }
         eprintln!("  run `terminal-state --help` for the list of options.");
+        std::process::exit(2);
+    }
+    if let Some(msg) = size_flag_error(&args) {
+        eprintln!("{msg}");
         std::process::exit(2);
     }
 
@@ -420,7 +453,7 @@ fn main() {
 
     // `--size <cols>x<rows>` (or `--size=<cols>x<rows>`): fix the render grid.
     // CLI takes precedence over the TS_COLS/TS_ROWS env vars (both parsed inside
-    // RenderConfig::for_game). Bad or absent → auto-size from terminal.
+    // RenderConfig::for_game). Absent → auto-size (a bad value exited above).
     let cli_size = parse_size_arg(&args);
 
     // Load persisted settings (missing/corrupt → defaults; never panics). These
@@ -1820,6 +1853,43 @@ mod tests {
             unknown_in(&["terminal-state", "-x", "--nope", "levels/01.lvl"]),
             ["-x", "--nope"]
         );
+    }
+
+    #[test]
+    fn a_value_on_a_flag_that_takes_none_is_a_usage_error() {
+        // `--dump=levels/01.lvl` used to pass the unknown-flag check (its NAME is
+        // known) and then miss the exact `== "--dump"` match, so the game launched
+        // interactively instead of dumping.
+        for arg in [
+            "--dump=levels/01.lvl",
+            "--ansi=1",
+            "--dump-color=yes",
+            "--dump-schedule=x",
+            "--help=1",
+        ] {
+            assert_eq!(unknown_in(&["terminal-state", arg]), [arg]);
+        }
+    }
+
+    #[test]
+    fn a_malformed_size_is_reported_not_ignored() {
+        for case in [
+            &["terminal-state", "--size", "120X40"][..],
+            &["terminal-state", "--size=abc"],
+            &["terminal-state", "--size"],
+        ] {
+            assert!(
+                size_flag_error(&argv(case)).is_some(),
+                "{case:?} must be a usage error"
+            );
+        }
+        for case in [
+            &["terminal-state", "--size", "120x40"][..],
+            &["terminal-state", "--size=80x24"],
+            &["terminal-state"],
+        ] {
+            assert_eq!(size_flag_error(&argv(case)), None, "{case:?}");
+        }
     }
 
     #[test]
